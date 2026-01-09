@@ -133,7 +133,7 @@ const Sidebar = () => {
               {/* Blog Posts Link */}
               <li>
                 <NavLink
-                  to="/blogposts"
+                  to="/blogs"
                   className={({ isActive }) =>
                     `py-2 rounded flex items-center group ${
                       isActive
@@ -152,7 +152,7 @@ const Sidebar = () => {
               {/* World & Themes Link */}
               <li>
                 <NavLink
-                  to="/worldthemes"
+                  to="/worldandthemes"
                   className={({ isActive }) =>
                     `py-2 rounded flex items-center group ${
                       isActive
@@ -195,7 +195,7 @@ const Sidebar = () => {
                 >
                   <li>
                     <NavLink
-                      to="/account-settings"
+                      to="/editprofile"
                       className={({ isActive }) =>
                         `py-2 rounded flex items-center group ${
                           isActive
@@ -212,7 +212,7 @@ const Sidebar = () => {
                   </li>
                   <li>
                     <NavLink
-                      to="/account-settings"
+                      to="/accountsettings"
                       className={({ isActive }) =>
                         `py-2 rounded flex items-center group ${
                           isActive
@@ -229,7 +229,7 @@ const Sidebar = () => {
                   </li>
                   <li>
                     <NavLink
-                      to="/privacy-settings"
+                      to="/privacysettings"
                       className={({ isActive }) =>
                         `py-2 rounded flex items-center group ${
                           isActive
@@ -246,7 +246,7 @@ const Sidebar = () => {
                   </li>
                   <li>
                     <NavLink
-                      to="/privacy-settings"
+                      to="/termsandconditions"
                       className={({ isActive }) =>
                         `py-2 rounded flex items-center group ${
                           isActive

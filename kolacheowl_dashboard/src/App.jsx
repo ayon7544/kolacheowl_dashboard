@@ -12,6 +12,14 @@ import SetNewPasswordPage from "./pages/SetNewPasswordPage";
 import Layout from "./pages/layout"; // Import Layout
 import DashboardPage from "./pages/Dashboard";
 import Books from "./pages/Books";
+import Characters from "./pages/Characters";
+import Blogs from "./pages/Blogs";
+import WorldAndThemes from "./pages/WorldAndThemes";
+import AccountSettings from "./pages/AccountSettings";
+import EditProfile from "./pages/EditProfile";
+import PrivacySettings from "./pages/PrivacySettings";
+import TermsAndConditions from "./pages/TermsAndConditions";
+
 function App() {
   return (
     <Router>
@@ -38,6 +46,62 @@ function App() {
           element={
             <Layout>
               <Books />
+            </Layout>
+          }
+        />
+        <Route
+          path="/characters"
+          element={
+            <Layout>
+              <Characters />
+            </Layout>
+          }
+        />
+        <Route
+          path="/blogs"
+          element={
+            <Layout>
+              <Blogs />
+            </Layout>
+          }
+        />
+        <Route
+          path="/worldandthemes"
+          element={
+            <Layout>
+              <WorldAndThemes />
+            </Layout>
+          }
+        />
+        <Route
+          path="/accountsettings"
+          element={
+            <Layout>
+              <AccountSettings />
+            </Layout>
+          }
+        />
+        <Route
+          path="/editprofile"
+          element={
+            <Layout>
+              <EditProfile />
+            </Layout>
+          }
+        />
+        <Route
+          path="/privacysettings"
+          element={
+            <Layout>
+              <PrivacySettings />
+            </Layout>
+          }
+        />
+        <Route
+          path="/termsandconditions"
+          element={
+            <Layout>
+              <TermsAndConditions />
             </Layout>
           }
         />
