@@ -17,12 +17,12 @@ import { CiCircleInfo } from "react-icons/ci";
 import { MdOutlinePrivacyTip } from "react-icons/md";
 import { FaRegNewspaper } from "react-icons/fa";
 import { CgProfile } from "react-icons/cg";
-
+import { useLogoutMutation } from "../services/allApi";
+import { deleteCookie } from "../services/cookies";
 const Sidebar = () => {
-  const [isOpen, setIsOpen] = useState(false); // State for dropdown
-  const [sidebarVisible, setSidebarVisible] = useState(true); // State for sidebar visibility
-
-  // Toggles the visibility of the dropdown menu for Settings
+  const [isOpen, setIsOpen] = useState(false);
+  const [sidebarVisible, setSidebarVisible] = useState(true);
+  const [logout, { isLoading }] = useLogoutMutation();
   const toggleDropdown = () => {
     setIsOpen(!isOpen);
   };
@@ -34,6 +34,24 @@ const Sidebar = () => {
       setIsOpen(false); // Close dropdown when sidebar is collapsed
     }
     setSidebarVisible(!sidebarVisible);
+  };
+
+  const handleLogout = async () => {
+    try {
+      // 5. Call the API
+      await logout().unwrap();
+
+      // 6. Clear local storage and cookies
+      deleteCookie("NessasBrokenWorldAuthToken");
+      localStorage.removeItem("user");
+
+      toast.success("Logged out successfully");
+
+      // 7. Redirect to login
+      navigate("/login");
+    } catch (err) {
+      toast.error(err?.data?.message);
+    }
   };
 
   return (
@@ -266,10 +284,15 @@ const Sidebar = () => {
             </ul>
           </nav>
 
-          {/* Log Out Button */}
-          <button className="mt-auto text-gray-400 hover:text-white flex items-center">
+          <button
+            onClick={handleLogout}
+            disabled={isLoading}
+            className="mt-auto text-gray-400 hover:text-white flex items-center transition-colors disabled:opacity-50"
+          >
             <FaSignOutAlt className="mr-3" />
-            <span className="text-dashboard">Log out</span>
+            <span className="text-dashboard">
+              {isLoading ? "Logging out..." : "Log out"}
+            </span>
           </button>
         </>
       )}

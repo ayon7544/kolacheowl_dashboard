@@ -19,12 +19,18 @@ import AccountSettings from "./pages/AccountSettings";
 import EditProfile from "./pages/EditProfile";
 import PrivacySettings from "./pages/PrivacySettings";
 import TermsAndConditions from "./pages/TermsAndConditions";
-
+import { getCookie } from "./services/cookies";
 function App() {
+  const token = getCookie("NessasBrokenWorldAuthToken");
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Navigate to="/login" />} />
+        <Route
+          path="/"
+          element={
+            token ? <Navigate to="/dashboard" /> : <Navigate to="/login" />
+          }
+        />
 
         {/* Routes without Sidebar */}
         <Route path="/login" element={<LoginPage />} />

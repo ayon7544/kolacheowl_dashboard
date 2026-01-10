@@ -22,7 +22,7 @@ const SetNewPasswordPage = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen">
+ <div className="flex items-center justify-center min-h-screen bg-slate-50 px-4">
       <div className="bg-white p-8 rounded-lg shadow-md w-150">
         <Text text="Set a new password" />
 
