@@ -1,5 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { getCookie } from "./cookies";
+
 const allApi = createApi({
   reducerPath: "allApi",
   baseQuery: fetchBaseQuery({
@@ -26,12 +27,20 @@ const allApi = createApi({
         method: "POST",
       }),
     }),
+    forgotPassword: builder.mutation({
+      query: (email) => ({
+        url: "/auth/forgot-password",
+        method: "POST",
+        body: email,
+      }),
+    }),
   }),
 });
 
 export const {
   useLoginMutation,
-  useLogoutMutation, // Exporting the hook for logout mutation
+  useLogoutMutation,
+  useForgotPasswordMutation,
 } = allApi;
 
 export default allApi;

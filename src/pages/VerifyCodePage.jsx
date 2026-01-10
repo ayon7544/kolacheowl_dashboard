@@ -9,31 +9,56 @@ const VerifyCodePage = () => {
   const [code, setCode] = useState(["", "", "", "", ""]);
   const inputRefs = useRef([]);
 
+  // Handles standard typing
   const handleInputChange = (value, index) => {
+    if (isNaN(value)) return; // Only allow numbers
+
     const newCode = [...code];
-    newCode[index] = value;
+    newCode[index] = value.substring(value.length - 1); // Get only the last character
     setCode(newCode);
 
+    // Move focus forward
     if (value !== "" && index < 4) {
       inputRefs.current[index + 1].focus();
     }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  // Handles Backspace key
+  const handleKeyDown = (e, index) => {
+    if (e.key === "Backspace" && !code[index] && index > 0) {
+      // If current field is empty, move focus to previous field
+      inputRefs.current[index - 1].focus();
+    }
+  };
 
+  // Handles Pasting (e.g., 12345)
+  const handlePaste = (e) => {
+    const data = e.clipboardData.getData("text").slice(0, 5); // Get first 5 chars
+    if (!/^\d+$/.test(data)) return; // Ensure only numbers are pasted
+
+    const newCode = [...code];
+    data.split("").forEach((char, index) => {
+      newCode[index] = char;
+    });
+    setCode(newCode);
+
+    // Focus the last filled input or the first empty one
+    const nextIndex = data.length < 5 ? data.length : 4;
+    inputRefs.current[nextIndex].focus();
+  };
+
+  const handleSubmit = (e) => {
+    if (e) e.preventDefault();
     if (code.includes("") || code.length !== 5) {
       toast.error("Please enter all 5 digits");
       return;
     }
-
-    console.log("Verification Code Submitted:", code.join(""));
     toast.success("Verification code submitted successfully!");
-
     navigate("/setNewPassword");
   };
 
-  const handleResend = () => {
+  const handleResend = (e) => {
+    e.preventDefault();
     toast.info("Verification code resent!");
   };
 
@@ -41,10 +66,8 @@ const VerifyCodePage = () => {
     <div className="flex items-center justify-center min-h-screen bg-slate-50 px-4">
       <div className="bg-white p-8 rounded-lg shadow-md w-150">
         <Text text="Verification code" />
-
         <p className="text-center text-gray-600 mb-4">
-          We sent a reset link to contact@dscode...com
-          <br />
+          We sent a reset link to contact@dscode...com <br />
           Enter the 5-digit code that is mentioned in the email
         </p>
 
@@ -56,8 +79,11 @@ const VerifyCodePage = () => {
             <input
               key={index}
               type="text"
+              inputMode="numeric"
               value={digit}
               onChange={(e) => handleInputChange(e.target.value, index)}
+              onKeyDown={(e) => handleKeyDown(e, index)}
+              onPaste={handlePaste}
               maxLength="1"
               className="w-14 h-14 text-center text-xl border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
               ref={(el) => (inputRefs.current[index] = el)}
@@ -69,13 +95,12 @@ const VerifyCodePage = () => {
 
         <p className="text-center mt-4">
           You have not received the email?{" "}
-          <a
-            href="#"
+          <button
             onClick={handleResend}
-            className="text-sm text-green-500 hover:underline"
+            className="text-sm text-green-500 hover:underline bg-transparent border-none cursor-pointer"
           >
             Resend
-          </a>
+          </button>
         </p>
       </div>
     </div>

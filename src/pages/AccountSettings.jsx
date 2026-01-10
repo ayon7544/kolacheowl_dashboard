@@ -17,7 +17,6 @@ export default function AboutUsManagement() {
     // Mock save functionality
     setShowSuccess(true);
     setTimeout(() => setShowSuccess(false), 3000);
-    console.log("Saving About Us content:", content);
   };
 
   return (

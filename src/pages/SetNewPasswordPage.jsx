@@ -14,10 +14,10 @@ const SetNewPasswordPage = () => {
     e.preventDefault();
     if (newPassword === confirmPassword) {
       toast.success("Password updated successfully!");
-      console.log("Password updated:", newPassword);
+
     } else {
       toast.error("Passwords do not match. Please try again.");
-      console.log("Passwords do not match");
+
     }
   };
 

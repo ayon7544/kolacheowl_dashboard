@@ -17,7 +17,7 @@ const LoginPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!email || !password) {
       toast.error("Please fill in all fields");
       return;
@@ -29,7 +29,7 @@ const LoginPage = () => {
 
       if (response?.success) {
         const token = response.data?.token;
-        
+
         // Save token to cookie (7 days if 'remember' is checked)
         setCookie("NessasBrokenWorldAuthToken", token, {
           path: "/",
@@ -44,9 +44,9 @@ const LoginPage = () => {
       }
     } catch (err) {
       // Handles 400/500 errors from the server
-      const errorMsg = err?.data?.message || "Invalid credentials. Please try again.";
+      const errorMsg =
+        err?.data?.message || "Invalid credentials. Please try again.";
       toast.error(errorMsg);
-      console.error("Login API Error:", err);
     }
   };
 
@@ -54,10 +54,14 @@ const LoginPage = () => {
     <div className="flex items-center justify-center min-h-screen bg-slate-50 px-4">
       {/* Subtle border and soft shadow for a premium feel */}
       <div className="bg-white p-10 rounded-2xl shadow-sm border border-gray-100 w-150">
-        
         <div className="text-center mb-8">
-          <Text text="Welcome Back" className="text-2xl font-bold text-gray-800" />
-          <p className="text-sm text-gray-500 mt-2">Enter your details to manage your account</p>
+          <Text
+            text="Welcome Back"
+            className="text-2xl font-bold text-gray-800"
+          />
+          <p className="text-sm text-gray-500 mt-2">
+            Enter your details to manage your account
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -93,9 +97,12 @@ const LoginPage = () => {
                 Remember me
               </span>
             </label>
-            
-            <Link to="/forgetPassword" title="Reset your password"
-              className="font-medium text-red-600 hover:text-red-700 transition-colors">
+
+            <Link
+              to="/forgetPassword"
+              title="Reset your password"
+              className="font-medium text-red-600 hover:text-red-700 transition-colors"
+            >
               Forgot Password?
             </Link>
           </div>
@@ -104,6 +111,7 @@ const LoginPage = () => {
             <Button
               buttonText={isLoading ? "Signing in..." : "Sign In"}
               disabled={isLoading}
+              loading={isLoading} // Pass the API loading state here
               className="w-full py-3 transition-all active:scale-[0.98]"
             />
           </div>
