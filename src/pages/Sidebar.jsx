@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import {
   FaBars,
   FaSignOutAlt,
@@ -19,7 +19,10 @@ import { FaRegNewspaper } from "react-icons/fa";
 import { CgProfile } from "react-icons/cg";
 import { useLogoutMutation } from "../services/allApi";
 import { deleteCookie } from "../services/cookies";
+import { toast } from "react-toastify";
+
 const Sidebar = () => {
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [sidebarVisible, setSidebarVisible] = useState(true);
   const [logout, { isLoading }] = useLogoutMutation();
@@ -39,13 +42,13 @@ const Sidebar = () => {
   const handleLogout = async () => {
     try {
       // 5. Call the API
-      await logout().unwrap();
+      const res = await logout().unwrap();
 
       // 6. Clear local storage and cookies
       deleteCookie("NessasBrokenWorldAuthToken");
       localStorage.removeItem("user");
 
-      toast.success("Logged out successfully");
+      toast.success(res?.message);
 
       // 7. Redirect to login
       navigate("/login");
