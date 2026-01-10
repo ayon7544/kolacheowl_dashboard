@@ -1,34 +1,73 @@
 import React, { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
+import { useChangePasswordMutation } from "../services/allApi"; // Import hook
 import Text from "../components/Text";
 import Inputbox from "../components/InputBox";
 import Button from "../components/Button";
+import { CgPassword } from "react-icons/cg";
 
 const SetNewPasswordPage = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Get data passed from VerifyCodePage
+  const email = location.state?.email || "";
+  const verificationCode = location.state?.verificationCode || "";
+
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const handleSubmit = (e) => {
+  // API Mutation
+  const [changePassword, { isLoading }] = useChangePasswordMutation();
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (newPassword === confirmPassword) {
+
+    if (!newPassword || !confirmPassword) {
+      toast.error("Please fill in all fields.");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast.error("Passwords do not match. Please try again.");
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      toast.error("Password must be at least 6 characters long.");
+      return;
+    }
+
+    try {
+      // Send the data required by your backend
+      await changePassword({
+        email: email,
+        password: newPassword,
+      }).unwrap();
+
       toast.success("Password updated successfully!");
 
-    } else {
-      toast.error("Passwords do not match. Please try again.");
-
+      // Navigate to login after successful reset
+      setTimeout(() => {
+        navigate("/login");
+      }, 2000);
+    } catch (err) {
+      console.log(err)
+      toast.error(err?.data?.message || "Failed to update password.");
     }
   };
 
   return (
- <div className="flex items-center justify-center min-h-screen bg-slate-50 px-4">
+    <div className="flex items-center justify-center min-h-screen bg-slate-50 px-4">
       <div className="bg-white p-8 rounded-lg shadow-md w-150">
         <Text text="Set a new password" />
 
         <p className="text-center text-gray-600 mb-4">
-          Create a new password. Ensure it differs from previous ones for
-          security
+          Create a new password for{" "}
+          <span className="font-medium text-black">{email}</span>.
         </p>
 
         <form onSubmit={handleSubmit}>
@@ -50,7 +89,11 @@ const SetNewPasswordPage = () => {
             setShowPassword={setShowConfirmPassword}
           />
 
-          <Button buttonText="Update Password" handleSubmit={handleSubmit} />
+          <Button
+            buttonText="Update Password"
+            handleSubmit={handleSubmit}
+            loading={isLoading} // Show spinner during API call
+          />
         </form>
       </div>
     </div>
