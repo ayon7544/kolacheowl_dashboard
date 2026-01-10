@@ -34,6 +34,23 @@ const allApi = createApi({
         body: email,
       }),
     }),
+    // --- New Endpoints Added Below ---
+    verifyOtp: builder.mutation({
+      query: (otpData) => (
+        {
+          url: "/auth/verify-otp",
+          method: "POST",
+          body: otpData,
+        }
+      ),
+    }),
+    resendOtp: builder.mutation({
+      query: (email) => ({
+        url: "/auth/resend-otp",
+        method: "POST",
+        body: email,
+      }),
+    }),
   }),
 });
 
@@ -41,6 +58,8 @@ export const {
   useLoginMutation,
   useLogoutMutation,
   useForgotPasswordMutation,
+  useVerifyOtpMutation,
+  useResendOtpMutation,
 } = allApi;
 
 export default allApi;

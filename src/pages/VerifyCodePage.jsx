@@ -1,40 +1,44 @@
 import React, { useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
+import { useVerifyOtpMutation, useResendOtpMutation } from "../services/allApi";
 import Text from "../components/Text";
 import Button from "../components/Button";
 
 const VerifyCodePage = () => {
   const navigate = useNavigate();
-  const [code, setCode] = useState(["", "", "", "", ""]);
+  const location = useLocation();
+
+  // Get email from navigation state (passed from ForgotPasswordPage)
+  const email = location.state?.email || "";
+
+  const [code, setCode] = useState(["", "", "", "", "",""]);
   const inputRefs = useRef([]);
 
-  // Handles standard typing
-  const handleInputChange = (value, index) => {
-    if (isNaN(value)) return; // Only allow numbers
+  // API Hooks
+  const [verifyOtp, { isLoading: isVerifying }] = useVerifyOtpMutation();
+  const [resendOtp, { isLoading: isResending }] = useResendOtpMutation();
 
+  const handleInputChange = (value, index) => {
+    if (isNaN(value)) return;
     const newCode = [...code];
-    newCode[index] = value.substring(value.length - 1); // Get only the last character
+    newCode[index] = value.substring(value.length - 1);
     setCode(newCode);
 
-    // Move focus forward
     if (value !== "" && index < 4) {
       inputRefs.current[index + 1].focus();
     }
   };
 
-  // Handles Backspace key
   const handleKeyDown = (e, index) => {
     if (e.key === "Backspace" && !code[index] && index > 0) {
-      // If current field is empty, move focus to previous field
       inputRefs.current[index - 1].focus();
     }
   };
 
-  // Handles Pasting (e.g., 12345)
   const handlePaste = (e) => {
-    const data = e.clipboardData.getData("text").slice(0, 5); // Get first 5 chars
-    if (!/^\d+$/.test(data)) return; // Ensure only numbers are pasted
+    const data = e.clipboardData.getData("text").slice(0, 6);
+    if (!/^\d+$/.test(data)) return;
 
     const newCode = [...code];
     data.split("").forEach((char, index) => {
@@ -42,24 +46,49 @@ const VerifyCodePage = () => {
     });
     setCode(newCode);
 
-    // Focus the last filled input or the first empty one
-    const nextIndex = data.length < 5 ? data.length : 4;
+    const nextIndex = data.length < 6 ? data.length : 5;
     inputRefs.current[nextIndex].focus();
   };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     if (e) e.preventDefault();
-    if (code.includes("") || code.length !== 5) {
+
+    const codeString = code.join(""); // Joins "12345"
+
+    if (codeString.length !== 6) {
       toast.error("Please enter all 5 digits");
       return;
     }
-    toast.success("Verification code submitted successfully!");
-    navigate("/setNewPassword");
-  };
 
-  const handleResend = (e) => {
+
+    const otpAsNumber = Number(codeString);
+
+    try {
+      await verifyOtp({
+        email: email,
+        verificationCode: otpAsNumber, 
+      }).unwrap();
+
+      toast.success("Verification successful!");
+      navigate("/setNewPassword", {
+        state: { email, verificationCode: otpAsNumber },
+      });
+    } catch (err) {
+      toast.error(err?.data?.message || "Invalid or expired code");
+    }
+  };
+  const handleResend = async (e) => {
     e.preventDefault();
-    toast.info("Verification code resent!");
+    if (!email) {
+      toast.error("Email not found. Please go back and try again.");
+      return;
+    }
+
+    try {
+      await resendOtp({ email }).unwrap();
+      toast.success("Verification code resent!");
+    } catch (err) {
+      toast.error(err?.data?.message || "Failed to resend code.");
+    }
   };
 
   return (
@@ -67,13 +96,14 @@ const VerifyCodePage = () => {
       <div className="bg-white p-8 rounded-lg shadow-md w-150">
         <Text text="Verification code" />
         <p className="text-center text-gray-600 mb-4">
-          We sent a reset link to contact@dscode...com <br />
-          Enter the 5-digit code that is mentioned in the email
+          We sent a reset link to{" "}
+          <span className="font-semibold">{email || "your email"}</span> <br />
+          Enter the 6-digit code mentioned in the email
         </p>
 
         <form
           onSubmit={handleSubmit}
-          className="flex justify-center mb-4 space-x-2"
+          className="flex justify-center mb-6 space-x-2"
         >
           {code.map((digit, index) => (
             <input
@@ -91,15 +121,22 @@ const VerifyCodePage = () => {
           ))}
         </form>
 
-        <Button buttonText="Verify Code" handleSubmit={handleSubmit} />
+        <Button
+          buttonText="Verify Code"
+          handleSubmit={handleSubmit}
+          loading={isVerifying}
+        />
 
-        <p className="text-center mt-4">
+        <p className="text-center mt-6 text-gray-600">
           You have not received the email?{" "}
           <button
             onClick={handleResend}
-            className="text-sm text-green-500 hover:underline bg-transparent border-none cursor-pointer"
+            disabled={isResending}
+            className={`text-sm font-medium ${
+              isResending ? "text-gray-400" : "text-green-500 hover:underline"
+            } bg-transparent border-none cursor-pointer`}
           >
-            Resend
+            {isResending ? "Sending..." : "Resend"}
           </button>
         </p>
       </div>

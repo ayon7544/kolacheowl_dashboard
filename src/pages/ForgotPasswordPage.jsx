@@ -27,7 +27,7 @@ const ForgotPasswordPage = () => {
 
     try {
       await forgotPassword({ email }).unwrap();
-     navigate("/verifyCode");
+      navigate("/verifyCode", { state: { email: email } });
       toast.success("Verification code sent to your email!");
     } catch (err) {
       toast.error(err?.data?.message || "Something went wrong.");
