@@ -9,7 +9,7 @@ import LoginPage from "./pages/LoginPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import VerifyCodePage from "./pages/VerifyCodePage";
 import SetNewPasswordPage from "./pages/SetNewPasswordPage";
-import Layout from "./pages/layout"; // Import Layout
+import Layout from "./pages/Layout"; // Import Layout
 import DashboardPage from "./pages/Dashboard";
 import Books from "./pages/Books";
 import Characters from "./pages/Characters";
