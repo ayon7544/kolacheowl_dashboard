@@ -16,7 +16,7 @@ import { Card } from "../components/Card";
 import { Input, InputGroup, Textarea } from "../components/Form";
 import { DeleteConfirmModal } from "../components/DeleteConfirmModal";
 import { Pagination } from "../components/Pagination";
-import { RichTextEditor } from "../components/RichTextEditor";
+import { TextEditor } from "../components/TextEditor";
 
 const INITIAL_BOOKS = [
   {
@@ -305,7 +305,7 @@ export default function Books() {
           </InputGroup>
 
           <InputGroup label="About This Book (Full Details)">
-            <RichTextEditor
+            <TextEditor
               content={selectedBook?.about || ""}
               onChange={(html) =>
                 setSelectedBook({ ...selectedBook, about: html })

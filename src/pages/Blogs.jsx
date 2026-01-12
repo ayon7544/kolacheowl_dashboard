@@ -8,7 +8,7 @@ import {
   Image as ImageIcon,
 } from "lucide-react";
 
-import { RichTextEditor } from "../components/RichTextEditor";
+import { TextEditor } from "../components/TextEditor";
 import { Modal } from "../components/Modal";
 import { Card } from "../components/Card";
 import { Input, InputGroup } from "../components/Form";
@@ -203,7 +203,7 @@ export default function Blogs() {
             </InputGroup>
           </div>
           <InputGroup label="Blog Content">
-            <RichTextEditor
+            <TextEditor
               content={selectedBlog?.content || ""}
               onChange={(html) =>
                 setSelectedBlog({ ...selectedBlog, content: html })

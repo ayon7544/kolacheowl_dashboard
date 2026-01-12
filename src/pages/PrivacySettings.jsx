@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { CheckCircle2 } from "lucide-react";
-import { RichTextEditor } from "../components/RichTextEditor";
+import { TextEditor } from "../components/TextEditor";
 
 export default function PrivacyPolicyManagement() {
   const [content, setContent] = useState(
@@ -31,7 +31,7 @@ export default function PrivacyPolicyManagement() {
       </div>
 
       <div className="w-full max-w-225">
-        <RichTextEditor
+        <TextEditor
           content={content}
           onChange={(html) => setContent(html)}
           placeholder="Type your Privacy Policy content here..."

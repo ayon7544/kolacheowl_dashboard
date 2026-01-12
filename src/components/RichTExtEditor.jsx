@@ -137,7 +137,7 @@ const MenuBar = ({ editor }) => {
   );
 };
 
-export const RichTextEditor = ({ content, onChange }) => {
+export const TextEditor = ({ content, onChange }) => {
   const editor = useEditor({
     extensions: [
       StarterKit.configure({

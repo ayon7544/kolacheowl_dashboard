@@ -15,7 +15,7 @@ import { Card } from "../components/Card";
 import { Input, InputGroup, Textarea } from "../components/Form";
 import { DeleteConfirmModal } from "../components/DeleteConfirmModal";
 import { Pagination } from "../components/Pagination";
-import { RichTextEditor } from "../components/RichTextEditor";
+import { TextEditor } from "../components/TextEditor";
 
 const INITIAL_CHARACTERS = [
   {
@@ -233,7 +233,7 @@ export default function Characters() {
           </InputGroup>
 
           <InputGroup label="Full Biography & Backstory">
-            <RichTextEditor
+            <TextEditor
               content={selectedCharacter?.bio || ""}
               onChange={(html) =>
                 setSelectedCharacter({ ...selectedCharacter, bio: html })

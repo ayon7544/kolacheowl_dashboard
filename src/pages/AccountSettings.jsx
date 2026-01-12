@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { CheckCircle2 } from "lucide-react";
-import { RichTextEditor } from "../components/RichTextEditor";
+import { TextEditor } from "../components/TextEditor";
 export default function AboutUsManagement() {
   const [content, setContent] = useState(
     "<p>By using the app, you agree to create an account and keep your login information secure. Users can book appointments, and service providers manage availability and appointments. Payments are handled between users and providers.</p><p>Education also nurtures empathy and cultural awareness, featuring a more inclusive and understanding society. By learning about diverse perspectives and histories, we become more open-minded and respectful of differences.</p>"
@@ -37,7 +37,7 @@ export default function AboutUsManagement() {
       <div className="w-full max-w-225">
         {/* Main Editor Component */}
         <div className="w-full mb-6">
-          <RichTextEditor
+          <TextEditor
             content={content}
             onChange={(html) => setContent(html)}
             placeholder="Tell your story here..."
