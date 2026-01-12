@@ -83,6 +83,91 @@ const allApi = createApi({
         body: data,
       }),
     }),
+    // --- ABOUT US (3) ---
+    getAboutUs: builder.query({
+      query: () => "/legal/about-us",
+    }),
+    createAboutUs: builder.mutation({
+      query: (data) => ({ url: "/legal/about-us", method: "POST", body: data }),
+    }),
+    updateAboutUs: builder.mutation({
+      query: (data) => ({ url: "/legal/about-us", method: "Post", body: data }),
+    }),
+
+    // --- PRIVACY POLICY (3) ---
+    getPrivacyPolicy: builder.query({
+      query: () => "/legal/privacy-policy",
+    }),
+    createPrivacyPolicy: builder.mutation({
+      query: (data) => ({
+        url: "/legal/privacy-policy",
+        method: "POST",
+        body: data,
+      }),
+    }),
+    updatePrivacyPolicy: builder.mutation({
+      query: (data) => ({
+        url: "/legal/privacy-policy",
+        method: "POST",
+        body: data,
+      }),
+    }),
+
+    // --- TERMS & CONDITIONS (3) ---
+    getTermsConditions: builder.query({
+      query: () => "/legal/terms-and-conditions",
+    }),
+    createTermsConditions: builder.mutation({
+      query: (data) => ({
+        url: "/legal/terms-and-conditions",
+        method: "POST",
+        body: data,
+      }),
+    }),
+    updateTermsConditions: builder.mutation({
+      query: (data) => ({
+        url: "/legal/terms-and-conditions",
+        method: "POST",
+        body: data,
+      }),
+    }),
+    // --- BOOK MANAGEMENT ---
+    getBooks: builder.query({
+      query: ({ page = 1, limit = 10, searchTerm = "" } = {}) =>
+        `/book/?page=${page}&limit=${limit}&searchTerm=${searchTerm}`,
+      transformResponse: (response) => ({
+        result: response.data.result,
+        meta: response.data.meta,
+      }),
+    }),
+
+    getSingleBook: builder.query({
+      query: (bookId) => `/book/single/${bookId}`,
+      transformResponse: (response) => response.data,
+    }),
+
+    createBook: builder.mutation({
+      query: (formData) => ({
+        url: "/book/create",
+        method: "POST",
+        body: formData,
+      }),
+    }),
+
+    updateBook: builder.mutation({
+      query: ({ bookId, formData }) => ({
+        url: `/book/update/${bookId}`,
+        method: "PUT",
+        body: formData,
+      }),
+    }),
+
+    deleteBook: builder.mutation({
+      query: (bookId) => ({
+        url: `/book/delete/${bookId}`,
+        method: "DELETE",
+      }),
+    }),
   }),
 });
 
@@ -97,6 +182,20 @@ export const {
   useUploadProfileImageMutation,
   useUpdateProfileMutation,
   useAdminChangePasswordMutation,
+  useCreateAboutUsMutation,
+  useCreatePrivacyPolicyMutation,
+  useCreateTermsConditionsMutation,
+  useGetAboutUsQuery,
+  useGetPrivacyPolicyQuery,
+  useGetTermsConditionsQuery,
+  useUpdateAboutUsMutation,
+  useUpdatePrivacyPolicyMutation,
+  useUpdateTermsConditionsMutation,
+  useCreateBookMutation,
+  useDeleteBookMutation,
+  useGetBooksQuery,
+  useGetSingleBookQuery,
+  useUpdateBookMutation,
 } = allApi;
 
 export default allApi;

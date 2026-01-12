@@ -1,22 +1,60 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { CheckCircle2 } from "lucide-react";
+import { toast } from "react-toastify";
 import TextEditor from "../components/TextEditor";
-export default function PrivacyPolicyManagement() {
-  const [content, setContent] = useState(
-    "<h2>Privacy Policy</h2><p>By using the app, you agree to create an account and keep your login information secure. Users can book appointments, and service providers manage availability and appointments.</p>"
-  );
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
+import { LegalSkeleton } from "../components/shimmer/LegalSkeleton";
+import {
+  useGetPrivacyPolicyQuery,
+  useCreatePrivacyPolicyMutation,
+  useUpdatePrivacyPolicyMutation,
+} from "../services/allApi";
 
-  const handleSave = () => {
-    setIsSaving(true);
-    // Mock API Save
-    setTimeout(() => {
-      setIsSaving(false);
+export default function PrivacyPolicyManagement() {
+  const [content, setContent] = useState("");
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  // --- API HOOKS ---
+  const { data, isLoading, refetch } = useGetPrivacyPolicyQuery();
+  const [createPrivacy, { isLoading: isCreating }] =
+    useCreatePrivacyPolicyMutation();
+  const [updatePrivacy, { isLoading: isUpdating }] =
+    useUpdatePrivacyPolicyMutation();
+
+  const isSaving = isCreating || isUpdating;
+
+  // Sync data from API to state
+  useEffect(() => {
+    if (data?.data?.content) {
+      setContent(data.data.content);
+    }
+  }, [data]);
+
+  // --- HANDLER ---
+  const handleSave = async () => {
+    try {
+      if (data?.data) {
+        // If data exists, we UPDATE
+        await updatePrivacy({ content }).unwrap();
+      } else {
+        // If no data exists yet, we CREATE
+        await createPrivacy({ content }).unwrap();
+      }
+
+      // UI Success Feedback
       setShowSuccess(true);
+      refetch(); // Manually refresh since providesTags/invalidatesTags are not used
       setTimeout(() => setShowSuccess(false), 3000);
-    }, 800);
+      toast.success("Privacy Policy saved successfully");
+    } catch (err) {
+      console.error("Save Error:", err);
+      toast.error(err?.data?.message || "Failed to save privacy policy");
+    }
   };
+
+  // --- LOADING STATE (SHIMMER) ---
+  if (isLoading) {
+    return <LegalSkeleton />;
+  }
 
   return (
     <div className="min-h-screen bg-white flex flex-col items-center p-6 md:p-12 font-sans text-slate-800">
@@ -30,15 +68,18 @@ export default function PrivacyPolicyManagement() {
       </div>
 
       <div className="w-full max-w-225">
-        <TextEditor
-          content={content}
-          onChange={(html) => setContent(html)}
-          placeholder="Type your Privacy Policy content here..."
-          minHeight="500px"
-        />
+        <div className="w-full mb-6">
+          <TextEditor
+            content={content}
+            onChange={(html) => setContent(html)}
+            placeholder="Type your Privacy Policy content here..."
+            minHeight="500px"
+          />
+        </div>
 
+        {/* Status Message Area */}
         <div
-          className={`mt-4 h-8 flex justify-center transition-opacity duration-300 ${
+          className={`h-8 flex justify-center transition-opacity duration-300 ${
             showSuccess ? "opacity-100" : "opacity-0"
           }`}
         >
@@ -47,10 +88,15 @@ export default function PrivacyPolicyManagement() {
           </div>
         </div>
 
+        {/* Action Button */}
         <button
           onClick={handleSave}
           disabled={isSaving}
-          className="w-full mt-6 py-4 bg-[#1e293b] text-white rounded-2xl font-bold text-lg shadow-lg hover:bg-slate-800 transition-all active:scale-[0.99] disabled:bg-slate-400"
+          className={`w-full mt-6 py-4 rounded-2xl font-bold text-lg shadow-lg transition-all active:scale-[0.99] ${
+            isSaving
+              ? "bg-slate-400 cursor-not-allowed text-white"
+              : "bg-[#1e293b] text-white hover:bg-slate-800"
+          }`}
         >
           {isSaving ? "Saving..." : "Save Privacy Policy"}
         </button>

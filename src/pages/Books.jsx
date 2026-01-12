@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Plus,
   Search,
@@ -8,336 +8,463 @@ import {
   Trash2,
   UploadCloud,
   Image as ImageIcon,
+  ExternalLink,
+  AlertCircle,
 } from "lucide-react";
-import { FileUploader } from "../components/FileUploader";
+import { toast } from "react-toastify";
+
 // Reusable Component Imports
 import { Modal } from "../components/Modal";
 import { Card } from "../components/Card";
 import { Input, InputGroup, Textarea } from "../components/Form";
 import { DeleteConfirmModal } from "../components/DeleteConfirmModal";
 import { Pagination } from "../components/Pagination";
+import { FileUploader } from "../components/FileUploader";
 import TextEditor from "../components/TextEditor";
-const INITIAL_BOOKS = [
-  {
-    id: 1,
-    title: "The Fracture",
-    description: "In a world where reality itself is coming undone...",
-    image:
-      "https://images.unsplash.com/photo-1543004471-240ce49a2a27?q=80&w=500",
-    writer: "Rina Kent",
-    published: "Oct 2025",
-    featured: "Yes",
-    about: "<p>Detailed information about the fracture...</p>",
-  },
-  {
-    id: 2,
-    title: "Echoes of the Void",
-    description: "The void calls to those who listen...",
-    image:
-      "https://images.unsplash.com/photo-1512820790803-83ca734da794?q=80&w=500",
-    writer: "Dark Fantasy",
-    published: "Oct 2025",
-    featured: "No",
-    about: "<p>The story of the void echoes...</p>",
-  },
-];
+import { LegalSkeleton } from "../components/shimmer/LegalSkeleton";
+import {
+  useGetBooksQuery,
+  useCreateBookMutation,
+  useUpdateBookMutation,
+  useDeleteBookMutation,
+} from "../services/allApi";
 
-export default function Books() {
-  const handleImageSelect = (file) => {
-    const url = URL.createObjectURL(file);
-    setSelectedBook({ ...selectedBook, image: url });
-  };
-  const handlePdfSelect = (file) => {
-    // Save the filename or the file object to state
-    setSelectedBook({ ...selectedBook, pdfName: file.name });
-  };
-  const [books, setBooks] = useState(INITIAL_BOOKS);
+export default function BooksManagement() {
+  // --- STATE ---
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
   const [modalType, setModalType] = useState(null);
   const [selectedBook, setSelectedBook] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [imagePreview, setImagePreview] = useState(null);
 
-  // --- Search Filtering ---
-  const filteredBooks = useMemo(() => {
-    return books.filter(
-      (book) =>
-        book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        book.writer.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [books, searchTerm]);
+  // --- API HOOKS ---
+  const { data, isLoading, refetch } = useGetBooksQuery({
+    page: currentPage,
+    limit: 10,
+    searchTerm: debouncedSearch,
+  });
 
-  // --- Handlers ---
+  const [createBook, { isLoading: isCreating }] = useCreateBookMutation();
+  const [updateBook, { isLoading: isUpdating }] = useUpdateBookMutation();
+  const [deleteBook, { isLoading: isDeleting }] = useDeleteBookMutation();
+
+  // --- EFFECTS ---
+  // Debounce search input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+      setCurrentPage(1);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  // Memory cleanup for local Blob URLs
+  useEffect(() => {
+    return () => {
+      if (imagePreview && imagePreview.startsWith("blob:")) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview]);
+
+  // --- HANDLERS ---
   const handleOpenAdd = () => {
+    setImagePreview(null);
     setSelectedBook({
       title: "",
-      writer: "",
+      writerName: "",
       description: "",
-      featured: "No",
-      about: "",
+      featuredRelease: false,
+      aboutBook: "",
+      imageFile: null,
+      pdfFile: null,
     });
     setModalType("add");
   };
 
   const handleOpenEdit = (book) => {
-    setSelectedBook(book);
+    setImagePreview(book.thumbnail);
+    setSelectedBook({
+      ...book,
+      imageFile: null,
+      pdfFile: null,
+    });
     setModalType("edit");
   };
 
-  const handleOpenDelete = (book) => {
-    setSelectedBook(book);
-    setModalType("delete");
-  };
-
-  const handleConfirmDelete = () => {
-    setBooks((prev) => prev.filter((b) => b.id !== selectedBook.id));
-    setModalType(null);
-  };
-
-  const handleSave = () => {
-    if (modalType === "edit") {
-      setBooks((prev) =>
-        prev.map((b) => (b.id === selectedBook.id ? selectedBook : b))
-      );
-    } else {
-      setBooks((prev) => [
-        {
-          ...selectedBook,
-          id: Date.now(),
-          published: new Date().toLocaleDateString("en-US", {
-            month: "short",
-            year: "numeric",
-          }),
-          image: INITIAL_BOOKS[0].image,
-        },
-        ...prev,
-      ]);
+  const handleImageSelect = (file) => {
+    if (imagePreview && imagePreview.startsWith("blob:")) {
+      URL.revokeObjectURL(imagePreview);
     }
-    setModalType(null);
+    const objectUrl = URL.createObjectURL(file);
+    setImagePreview(objectUrl);
+    setSelectedBook({ ...selectedBook, imageFile: file });
   };
+
+  const handleSave = async () => {
+    const formData = new FormData();
+
+    // 1. Prepare JSON payload for text fields
+    const payload = {
+      title: selectedBook.title,
+      writerName: selectedBook.writerName,
+      description: selectedBook.description,
+      aboutBook: selectedBook.aboutBook,
+      featuredRelease: selectedBook.featuredRelease,
+      isActive: selectedBook.isActive || false,
+    };
+
+    // 2. Wrap text data in 'data' key as string
+    formData.append("data", JSON.stringify(payload));
+
+    // 3. Append files with backend-specific keys
+    if (selectedBook.imageFile) {
+      formData.append("thumbnail", selectedBook.imageFile);
+    }
+    if (selectedBook.pdfFile) {
+      formData.append("bookPdf", selectedBook.pdfFile);
+    }
+
+    try {
+      if (modalType === "edit") {
+        await updateBook({ bookId: selectedBook.id, formData }).unwrap();
+        toast.success("Book updated successfully");
+      } else {
+        await createBook(formData).unwrap();
+        toast.success("Book published successfully");
+      }
+      setModalType(null);
+      refetch();
+    } catch (err) {
+      console.log(err);
+      toast.error(
+        err?.data?.message || "Operation failed. Please check your inputs."
+      );
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    try {
+      await deleteBook(selectedBook.id).unwrap();
+      toast.success("Book deleted");
+      setModalType(null);
+      refetch();
+    } catch (err) {
+      toast.error("Failed to delete book");
+    }
+  };
+
+  // --- RENDER LOADING ---
+  if (isLoading) return <LegalSkeleton />;
 
   return (
     <div className="min-h-screen bg-white p-6 md:p-10 font-sans text-slate-800">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-8">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900">
             Books Management
           </h1>
-          <p className="text-gray-500 mt-1">Manage your book collection</p>
+          <p className="text-gray-500 mt-1">
+            Add, edit, or remove books from the library
+          </p>
         </div>
         <button
           onClick={handleOpenAdd}
-          className="flex items-center bg-[#1e293b] text-white px-5 py-2.5 rounded-lg font-medium hover:bg-slate-800 transition-all shadow-md active:scale-95"
+          className="flex items-center bg-[#1e293b] text-white px-6 py-3 rounded-xl font-bold hover:bg-slate-800 transition-all shadow-lg active:scale-95"
         >
-          <Plus size={18} className="mr-2" /> Add New Book
+          <Plus size={20} className="mr-2" /> Add New Book
         </button>
       </div>
 
-      {/* Search */}
-      <div className="relative mb-10">
+      {/* Search Bar */}
+      <div className="relative mb-10 group">
         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-          <Search size={20} className="text-gray-400" />
+          <Search
+            size={20}
+            className="text-gray-400 group-focus-within:text-slate-600 transition-colors"
+          />
         </div>
         <input
           type="text"
-          placeholder="Search by title or writer..."
+          placeholder="Search by title or author name..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="block w-full pl-12 pr-4 py-3.5 bg-[#eef1f5] border-none rounded-xl focus:ring-2 focus:ring-slate-300 transition-all outline-none"
+          className="block w-full pl-12 pr-4 py-4 bg-slate-50 border-2 border-transparent focus:border-slate-200 focus:bg-white rounded-2xl transition-all outline-none"
         />
       </div>
 
-      {/* Grid */}
+      {/* Books Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {filteredBooks.map((book) => (
-          <Card
-            key={book.id}
-            title={book.title}
-            image={book.image}
-            actions={
-              <>
-                <button
-                  onClick={() => handleOpenEdit(book)}
-                  className="flex-1 flex items-center justify-center gap-2 bg-[#eef1f5] hover:bg-slate-200 text-slate-700 py-3 rounded-xl text-sm font-bold transition-all"
-                >
-                  <Edit3 size={16} /> Edit
-                </button>
-                <button
-                  onClick={() => handleOpenDelete(book)}
-                  className="w-12 flex items-center justify-center bg-[#fff1f2] hover:bg-pink-100 text-pink-500 py-3 rounded-xl border border-pink-100 transition-all"
-                >
-                  <Trash2 size={18} />
-                </button>
-              </>
-            }
-          >
-            <p className="text-gray-500 text-sm leading-relaxed mb-6 line-clamp-3">
-              {book.description}
+        {data?.result?.length > 0 ? (
+          data.result.map((book) => (
+            <Card
+              key={book.id}
+              title={book.title}
+              image={book.thumbnail}
+              actions={
+                <>
+                  <button
+                    onClick={() => handleOpenEdit(book)}
+                    className="flex-1 flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 py-3.5 rounded-xl text-sm font-bold transition-all"
+                  >
+                    <Edit3 size={16} /> Edit
+                  </button>
+                  <button
+                    onClick={() => {
+                      setSelectedBook(book);
+                      setModalType("delete");
+                    }}
+                    className="w-14 flex items-center justify-center bg-rose-50 hover:bg-rose-100 text-rose-500 py-3.5 rounded-xl border border-rose-100 transition-all"
+                  >
+                    <Trash2 size={20} />
+                  </button>
+                </>
+              }
+            >
+              <p className="text-gray-500 text-sm leading-relaxed mb-6 line-clamp-2 italic">
+                "{book.description}"
+              </p>
+              <div className="flex items-center gap-6 mb-2">
+                <MetaItem icon={Tag} label="Writer" value={book.writerName} />
+                <MetaItem
+                  icon={Calendar}
+                  label="Added"
+                  value={new Date(book.createdAt).toLocaleDateString("en-US", {
+                    month: "short",
+                    year: "numeric",
+                  })}
+                />
+              </div>
+            </Card>
+          ))
+        ) : (
+          <div className="col-span-full py-20 flex flex-col items-center justify-center text-gray-400">
+            <AlertCircle size={48} className="mb-4 opacity-20" />
+            <p className="text-lg font-medium">
+              No books found matching your criteria
             </p>
-            <div className="flex items-center gap-8 mb-6">
-              <MetaItem icon={Tag} label="Writer" value={book.writer} />
-              <MetaItem
-                icon={Calendar}
-                label="Published"
-                value={book.published}
-              />
-            </div>
-          </Card>
-        ))}
+          </div>
+        )}
       </div>
 
-      {/* Pagination */}
-      <Pagination
-        currentPage={currentPage}
-        totalPages={3}
-        onPageChange={(page) => setCurrentPage(page)}
-      />
+      {/* Pagination Container */}
+      <div className="mt-12">
+        <Pagination
+          currentPage={currentPage}
+          totalPages={data?.meta?.total ? Math.ceil(data.meta.total / 10) : 1}
+          onPageChange={(page) => setCurrentPage(page)}
+        />
+      </div>
 
-      {/* Add/Edit Modal */}
+      {/* Main Form Modal */}
       {(modalType === "add" || modalType === "edit") && (
         <Modal
           isOpen={true}
           onClose={() => setModalType(null)}
-          title={modalType === "edit" ? "Edit Book" : "Add New Book"}
+          title={
+            modalType === "edit" ? "Edit Book Details" : "Publish New Book"
+          }
           footer={
             <button
               onClick={handleSave}
-              className="px-16 py-3.5 bg-slate-800 text-white rounded-2xl font-bold shadow-xl shadow-slate-200 hover:bg-slate-900 transition-all active:scale-95"
+              disabled={isCreating || isUpdating}
+              className="px-20 py-4 bg-slate-900 text-white rounded-2xl font-bold shadow-2xl hover:bg-black transition-all active:scale-95 disabled:bg-slate-400 disabled:cursor-not-allowed"
             >
-              Publish
+              {isCreating || isUpdating
+                ? "Uploading Data..."
+                : "Confirm & Publish"}
             </button>
           }
         >
+          {/* Visual Preview */}
+          <div className="mb-8">
+            <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3">
+              Cover Preview
+            </p>
+            <div className="w-full h-72 bg-slate-50 rounded-[2rem] border-2 border-dashed border-slate-200 flex items-center justify-center overflow-hidden group">
+              {imagePreview ? (
+                <img
+                  src={imagePreview}
+                  alt="Preview"
+                  className="w-full h-full object-contain p-4 transition-transform group-hover:scale-105"
+                />
+              ) : (
+                <div className="flex flex-col items-center text-slate-300">
+                  <ImageIcon size={64} strokeWidth={1} />
+                  <p className="text-sm mt-2 font-medium">
+                    No cover image uploaded
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Form Fields */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <InputGroup label="Title">
+            <InputGroup label="Book Title">
               <Input
-                placeholder="Write your title"
+                placeholder="Enter title"
                 value={selectedBook?.title || ""}
                 onChange={(e) =>
                   setSelectedBook({ ...selectedBook, title: e.target.value })
                 }
               />
             </InputGroup>
-            <InputGroup label="Writer name">
+            <InputGroup label="Author / Writer">
               <Input
-                placeholder="Write author name"
-                value={selectedBook?.writer || ""}
+                placeholder="Author name"
+                value={selectedBook?.writerName || ""}
                 onChange={(e) =>
-                  setSelectedBook({ ...selectedBook, writer: e.target.value })
+                  setSelectedBook({
+                    ...selectedBook,
+                    writerName: e.target.value,
+                  })
                 }
               />
             </InputGroup>
           </div>
 
-          <InputGroup label="Description">
-            <Textarea
-              placeholder="Short description for the card"
-              value={selectedBook?.description || ""}
-              onChange={(e) =>
-                setSelectedBook({
-                  ...selectedBook,
-                  description: e.target.value,
-                })
-              }
-            />
-          </InputGroup>
+          <div className="mt-6">
+            <InputGroup label="Card Description (Short)">
+              <Textarea
+                placeholder="Briefly describe the book..."
+                value={selectedBook?.description || ""}
+                onChange={(e) =>
+                  setSelectedBook({
+                    ...selectedBook,
+                    description: e.target.value,
+                  })
+                }
+              />
+            </InputGroup>
+          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-            <InputGroup label="Thumbnail">
-              <div className="flex items-center border-2 border-gray-100 rounded-2xl p-1 bg-white">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-6 items-end">
+            <InputGroup label="Update Thumbnail">
+              <div className="flex items-center gap-4 bg-white border-2 border-slate-100 p-2 rounded-2xl">
                 <FileUploader onFileSelect={handleImageSelect} accept="image/*">
-                  <div className="bg-slate-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 whitespace-nowrap">
-                    <ImageIcon size={14} /> Browse Image
+                  <div className="bg-slate-800 text-white px-5 py-3 rounded-xl text-xs font-bold flex items-center gap-2 cursor-pointer hover:bg-slate-700 transition-colors">
+                    <ImageIcon size={16} /> Choose Image
                   </div>
                 </FileUploader>
-                <div className="px-3 text-xs text-gray-400 truncate">
-                  {selectedBook?.image ? "Image Selected" : "No file chosen"}
-                </div>
+                <span className="text-xs text-slate-400 truncate max-w-[150px]">
+                  {selectedBook?.imageFile
+                    ? selectedBook.imageFile.name
+                    : "jpeg, png supported"}
+                </span>
               </div>
             </InputGroup>
-            <InputGroup label="Featured Release">
-              <div className="flex gap-6 mt-2">
-                {["Yes", "No"].map((opt) => (
-                  <label
-                    key={opt}
-                    className="flex items-center gap-2 cursor-pointer group"
+
+            <InputGroup label="Set as Featured?">
+              <div className="flex gap-4 p-1 bg-slate-50 rounded-2xl">
+                {[true, false].map((val) => (
+                  <button
+                    key={val.toString()}
                     onClick={() =>
-                      setSelectedBook({ ...selectedBook, featured: opt })
+                      setSelectedBook({ ...selectedBook, featuredRelease: val })
                     }
+                    className={`flex-1 py-3 px-4 rounded-xl text-xs font-bold transition-all ${
+                      selectedBook?.featuredRelease === val
+                        ? "bg-white text-slate-900 shadow-sm"
+                        : "text-slate-400 hover:text-slate-600"
+                    }`}
                   >
-                    <div
-                      className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
-                        selectedBook?.featured === opt
-                          ? "border-slate-800"
-                          : "border-gray-200"
-                      }`}
-                    >
-                      {selectedBook?.featured === opt && (
-                        <div className="w-2.5 h-2.5 bg-slate-800 rounded-full" />
-                      )}
-                    </div>
-                    <span className="text-sm font-bold text-slate-700">
-                      {opt}
-                    </span>
-                  </label>
+                    {val ? "Featured" : "Regular"}
+                  </button>
                 ))}
               </div>
             </InputGroup>
           </div>
 
-          <InputGroup label="Book PDF">
-            <FileUploader
-              onFileSelect={handlePdfSelect}
-              accept=".pdf"
-              className="border-2 border-dashed border-gray-200 rounded-3xl p-10 flex flex-col items-center justify-center bg-gray-50/50 hover:bg-gray-50 transition-colors"
-            >
-              <div className="p-4 bg-slate-800 rounded-2xl text-white mb-4 shadow-lg shadow-slate-200">
-                <UploadCloud size={30} />
-              </div>
-              <p className="text-sm font-bold text-slate-700 mb-1">
-                {selectedBook?.pdfName || "Drag your PDF here to upload"}
-              </p>
-              <div className="mt-4 px-8 py-2.5 border-2 border-gray-200 bg-white rounded-xl text-sm font-bold text-slate-600">
-                Browse files
-              </div>
-            </FileUploader>
-          </InputGroup>
+          {/* PDF Management */}
+          <div className="mt-10">
+            <InputGroup label="Book Document (PDF)">
+              <div className="flex flex-col gap-4">
+                <FileUploader
+                  onFileSelect={(file) =>
+                    setSelectedBook({
+                      ...selectedBook,
+                      pdfFile: file,
+                      pdfName: file.name,
+                    })
+                  }
+                  accept=".pdf"
+                  className="border-2 border-dashed border-slate-200 rounded-[2rem] p-12 flex flex-col items-center justify-center bg-slate-50/50 hover:bg-slate-50 hover:border-slate-300 transition-all cursor-pointer"
+                >
+                  <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-slate-400 mb-4 shadow-sm">
+                    <UploadCloud size={32} />
+                  </div>
+                  <p className="text-sm font-bold text-slate-800">
+                    {selectedBook?.pdfFile
+                      ? selectedBook.pdfFile.name
+                      : "Click or drag to upload PDF"}
+                  </p>
+                  <p className="text-xs text-slate-400 mt-1">
+                    Maximum file size: 20MB
+                  </p>
+                </FileUploader>
 
-          <InputGroup label="About This Book (Full Details)">
-            <TextEditor
-              content={selectedBook?.about || ""}
-              onChange={(html) =>
-                setSelectedBook({ ...selectedBook, about: html })
-              }
-              placeholder="Write the full book synopsis and details..."
-            />
-          </InputGroup>
+                {/* PDF Live View */}
+                {(selectedBook?.bookPdf || selectedBook?.pdfFile) && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const url = selectedBook.pdfFile
+                        ? URL.createObjectURL(selectedBook.pdfFile)
+                        : selectedBook.bookPdf;
+                      window.open(url, "_blank");
+                    }}
+                    className="flex items-center justify-center gap-2 text-indigo-600 font-bold text-sm bg-indigo-50 border border-indigo-100 py-4 rounded-2xl hover:bg-indigo-100 transition-all"
+                  >
+                    <ExternalLink size={18} /> Review Document Content
+                  </button>
+                )}
+              </div>
+            </InputGroup>
+          </div>
+
+          <div className="mt-10">
+            <InputGroup label="About Book (Detailed Metadata)">
+              <TextEditor
+                content={selectedBook?.aboutBook || ""}
+                onChange={(html) =>
+                  setSelectedBook({ ...selectedBook, aboutBook: html })
+                }
+                placeholder="Enter full synopsis and metadata..."
+              />
+            </InputGroup>
+          </div>
         </Modal>
       )}
 
-      {/* Standalone Delete Modal */}
+      {/* Delete Confirmation */}
       <DeleteConfirmModal
         isOpen={modalType === "delete"}
         onClose={() => setModalType(null)}
         onConfirm={handleConfirmDelete}
         itemName={selectedBook?.title}
+        isLoading={isDeleting}
       />
     </div>
   );
 }
 
-// Internal Helper
+// --- HELPER SUB-COMPONENT ---
 function MetaItem({ icon: Icon, label, value }) {
   return (
-    <div className="flex items-center gap-2">
-      <div className="p-2 bg-slate-50 rounded-lg text-slate-800">
+    <div className="flex items-center gap-3">
+      <div className="p-2.5 bg-slate-100 rounded-xl text-slate-600">
         <Icon size={18} />
       </div>
       <div>
-        <p className="text-[10px] uppercase tracking-wider text-gray-400 font-extrabold leading-tight">
+        <p className="text-[10px] uppercase font-black tracking-widest text-slate-400 leading-none mb-1">
           {label}
         </p>
-        <p className="text-xs font-bold text-slate-800">{value}</p>
+        <p className="text-xs font-bold text-slate-800 truncate max-w-[120px]">
+          {value}
+        </p>
       </div>
     </div>
   );
