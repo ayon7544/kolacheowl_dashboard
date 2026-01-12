@@ -5,6 +5,7 @@ import App from "./App";
 import { Provider } from "react-redux";
 import { ToastContainer } from "react-toastify";
 import store from "./services/store";
+import React from "react";
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <Provider store={store}>

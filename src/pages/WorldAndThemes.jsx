@@ -1,290 +1,255 @@
-import React, { useState, useMemo } from 'react';
-import { 
-  Plus, Search, Edit3, Trash2, ChevronRight, 
-  X, Bold, Italic, Underline, List, AlignLeft, Image as ImageIcon,
-  Calendar
-} from 'lucide-react';
+import React, { useState, useMemo } from "react";
+import {
+  Plus,
+  Search,
+  Edit3,
+  Trash2,
+  User,
+  Image as ImageIcon,
+  ChevronRight,
+} from "lucide-react";
 
-// --- INITIAL DATA ---
-const INITIAL_THEMES = [
+// Reusable Component Imports
+import { Modal } from "../components/Modal";
+import { Card } from "../components/Card";
+import { Input, InputGroup, Textarea } from "../components/Form";
+import { DeleteConfirmModal } from "../components/DeleteConfirmModal";
+import { Pagination } from "../components/Pagination";
+import { RichTextEditor } from "../components/RichTextEditor";
+
+const INITIAL_CHARACTERS = [
   {
     id: 1,
-    title: "The Fractured Realm",
-    date: "December 13, 2025",
-    content: "Explore a world where reality itself has shattered into glass, each fragment reflecting a different possibility, a different path...",
-    image: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=600&auto=format&fit=crop",
-    isActive: true
+    name: "Nessa Thorne",
+    role: "Protagonist",
+    description: "A wanderer searching for the fragments of her past.",
+    image:
+      "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=600",
+    bio: "<p>Nessa was born in the fractured city of Oakhaven...</p>",
   },
   {
     id: 2,
-    title: "The Void Between",
-    date: "December 15, 2025",
-    content: "Between the fragments of reality lies the Void—not an abyss of nothingness, but a space of pure potential...",
-    image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=600&auto=format&fit=crop",
-    isActive: false
-  }
+    name: "Kaelen the Void-Walker",
+    role: "Antagonist",
+    description:
+      "A mysterious figure who thrives in the spaces between worlds.",
+    image:
+      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=600",
+    bio: "<p>Kaelen's origins are unknown to most, but the legends say...</p>",
+  },
 ];
 
-export default function WorldThemes() {
-  // --- STATE ---
-  const [themes, setThemes] = useState(INITIAL_THEMES);
+export default function Characters() {
+  const [characters, setCharacters] = useState(INITIAL_CHARACTERS);
   const [searchTerm, setSearchTerm] = useState("");
-  const [modalType, setModalType] = useState(null); // 'add', 'edit', 'delete'
-  const [selectedTheme, setSelectedTheme] = useState(null);
+  const [modalType, setModalType] = useState(null);
+  const [selectedCharacter, setSelectedCharacter] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
-  // --- FILTERING ---
-  const filteredThemes = useMemo(() => {
-    return themes.filter(theme => 
-      theme.title.toLowerCase().includes(searchTerm.toLowerCase())
+  // --- Search Filtering ---
+  const filteredCharacters = useMemo(() => {
+    return characters.filter(
+      (char) =>
+        char.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        char.role.toLowerCase().includes(searchTerm.toLowerCase())
     );
-  }, [themes, searchTerm]);
+  }, [characters, searchTerm]);
 
-  // --- HANDLERS ---
+  // --- Handlers ---
   const handleOpenAdd = () => {
-    setSelectedTheme({ title: '', content: '', image: '', isActive: true });
-    setModalType('add');
+    setSelectedCharacter({ name: "", role: "", description: "", bio: "" });
+    setModalType("add");
   };
 
-  const handleOpenEdit = (theme) => {
-    setSelectedTheme(theme);
-    setModalType('edit');
+  const handleOpenEdit = (char) => {
+    setSelectedCharacter(char);
+    setModalType("edit");
   };
 
-  const handleOpenDelete = (theme) => {
-    setSelectedTheme(theme);
-    setModalType('delete');
-  };
-
-  const handleCloseModal = () => {
-    setModalType(null);
-    setSelectedTheme(null);
-  };
-
-  const handleToggleActive = (id) => {
-    setThemes(prev => prev.map(t => t.id === id ? { ...t, isActive: !t.isActive } : t));
+  const handleOpenDelete = (char) => {
+    setSelectedCharacter(char);
+    setModalType("delete");
   };
 
   const handleConfirmDelete = () => {
-    setThemes(prev => prev.filter(t => t.id !== selectedTheme.id));
-    handleCloseModal();
+    setCharacters((prev) => prev.filter((c) => c.id !== selectedCharacter.id));
+    setModalType(null);
   };
 
-  const handleSaveTheme = (formData) => {
-    if (modalType === 'edit') {
-      setThemes(prev => prev.map(t => t.id === selectedTheme.id ? { ...t, ...formData } : t));
+  const handleSave = () => {
+    if (modalType === "edit") {
+      setCharacters((prev) =>
+        prev.map((c) => (c.id === selectedCharacter.id ? selectedCharacter : c))
+      );
     } else {
-      const newTheme = {
-        ...formData,
+      const newChar = {
+        ...selectedCharacter,
         id: Date.now(),
-        date: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
-        image: formData.image || "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=600"
+        image: selectedCharacter.image || INITIAL_CHARACTERS[0].image,
       };
-      setThemes(prev => [newTheme, ...prev]);
+      setCharacters((prev) => [newChar, ...prev]);
     }
-    handleCloseModal();
+    setModalType(null);
   };
 
   return (
     <div className="min-h-screen bg-white p-6 md:p-10 font-sans text-slate-800">
-      {/* Header Section */}
-      <div className="flex justify-between items-center mb-4">
+      {/* Header */}
+      <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">World/Themes Management</h1>
-          <p className="text-gray-500 text-sm mt-1">Manage world-building content and themes</p>
+          <h1 className="text-3xl font-bold tracking-tight">Characters</h1>
+          <p className="text-gray-500 mt-1">Manage the cast of your stories</p>
         </div>
-        <button 
+        <button
           onClick={handleOpenAdd}
-          className="flex items-center bg-[#1e293b] text-white px-5 py-2.5 rounded-lg font-medium hover:bg-slate-800 transition-all active:scale-95"
+          className="flex items-center bg-slate-900 text-white px-5 py-2.5 rounded-lg font-medium hover:bg-slate-800 transition-all active:scale-95 shadow-md"
         >
-          <Plus size={18} className="mr-2" /> New Theme
+          <Plus size={18} className="mr-2" /> Add Character
         </button>
       </div>
 
-      {/* Search Input */}
-      <div className="relative mb-8">
-        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-          <Search size={20} className="text-gray-400" />
-        </div>
+      {/* Search */}
+      <div className="relative mb-10">
+        <Search
+          size={20}
+          className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+        />
         <input
           type="text"
-          placeholder="Search themes..."
+          placeholder="Search by name or role..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="block w-full pl-12 pr-4 py-3.5 bg-[#eef1f5] border-none rounded-xl focus:ring-2 focus:ring-slate-300 transition-all outline-none text-slate-700 placeholder:text-gray-400"
+          className="block w-full pl-12 pr-4 py-3.5 bg-[#eef1f5] border-none rounded-xl focus:ring-2 focus:ring-slate-300 outline-none"
         />
       </div>
 
-      {/* Themes Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredThemes.map((theme) => (
-          <ThemeCard 
-            key={theme.id} 
-            theme={theme} 
-            onEdit={() => handleOpenEdit(theme)} 
-            onDelete={() => handleOpenDelete(theme)}
-            onToggle={() => handleToggleActive(theme.id)}
-          />
+      {/* Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {filteredCharacters.map((char) => (
+          <Card
+            key={char.id}
+            title={char.name}
+            image={char.image}
+            actions={
+              <>
+                <button
+                  onClick={() => handleOpenEdit(char)}
+                  className="flex-1 flex items-center justify-center gap-2 bg-[#eef1f5] hover:bg-slate-200 text-slate-700 py-3 rounded-xl text-sm font-bold transition-all"
+                >
+                  <Edit3 size={16} /> Edit
+                </button>
+                <button
+                  onClick={() => handleOpenDelete(char)}
+                  className="w-12 flex items-center justify-center bg-[#fff1f2] hover:bg-pink-100 text-pink-500 py-3 rounded-xl border border-pink-100 transition-all"
+                >
+                  <Trash2 size={18} />
+                </button>
+              </>
+            }
+          >
+            <div className="flex items-center gap-2 mb-3">
+              <div className="px-2 py-0.5 bg-slate-100 rounded text-[10px] font-bold text-slate-600 uppercase tracking-widest">
+                {char.role}
+              </div>
+            </div>
+            <p className="text-gray-500 text-sm leading-relaxed line-clamp-2">
+              {char.description}
+            </p>
+          </Card>
         ))}
       </div>
 
-      {/* Pagination Footer */}
-      <div className="flex justify-center items-center mt-12 gap-2 text-sm text-gray-400 font-medium">
-        <button className="w-8 h-8 rounded-full bg-slate-800 text-white flex items-center justify-center">1</button>
-        <button className="hover:text-slate-800">2</button>
-        <button className="hover:text-slate-800">3</button>
-        <span className="px-2">............</span>
-        <button className="hover:text-slate-800">100</button>
-        <button className="flex items-center ml-2 text-slate-800 font-bold hover:translate-x-1 transition-transform">
-          Next <ChevronRight size={16} className="ml-1" />
-        </button>
-      </div>
+      {/* Reusable Pagination */}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={4}
+        onPageChange={(page) => setCurrentPage(page)}
+      />
 
-      {/* --- MODALS --- */}
-      {modalType === 'delete' && (
-        <DeleteModal onConfirm={handleConfirmDelete} onClose={handleCloseModal} />
-      )}
-
-      {(modalType === 'add' || modalType === 'edit') && (
-        <ThemeFormModal 
-          mode={modalType} 
-          theme={selectedTheme} 
-          onSave={handleSaveTheme} 
-          onClose={handleCloseModal} 
-        />
-      )}
-    </div>
-  );
-}
-
-// --- SUB-COMPONENTS ---
-
-function ThemeCard({ theme, onEdit, onDelete, onToggle }) {
-  return (
-    <div className="bg-white rounded-2xl overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-gray-100 flex flex-col h-full">
-      <div className="h-48 w-full p-2.5">
-        <img src={theme.image} alt={theme.title} className="w-full h-full object-cover rounded-xl" />
-      </div>
-      <div className="px-5 pb-5 flex flex-col flex-grow">
-        <div className="flex justify-between items-start mb-1">
-          <p className="text-[10px] text-gray-400 font-bold flex items-center gap-1 mt-1">
-            <Calendar size={10} /> {theme.date}
-          </p>
-          {/* Toggle Switch */}
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-bold text-slate-400">{theme.isActive ? 'On' : 'Off'}</span>
-            <button 
-              onClick={onToggle}
-              className={`w-9 h-5 rounded-full p-0.5 transition-colors duration-200 ease-in-out ${theme.isActive ? 'bg-[#0f766e]' : 'bg-gray-300'}`}
-            >
-              <div className={`w-4 h-4 bg-white rounded-full shadow-sm transform transition-transform duration-200 ${theme.isActive ? 'translate-x-4' : 'translate-x-0'}`} />
-            </button>
-          </div>
-        </div>
-        <h3 className="text-sm font-bold text-slate-900 mb-2 leading-tight">{theme.title}</h3>
-        <p className="text-gray-500 text-[11px] leading-relaxed mb-4 flex-grow line-clamp-2">
-          {theme.content}
-        </p>
-
-        <div className="flex gap-2">
-          <button onClick={onEdit} className="flex-1 flex items-center justify-center gap-2 bg-[#eef1f5] hover:bg-slate-200 text-slate-700 py-2 rounded-lg text-xs font-bold transition-all">
-            <Edit3 size={14} /> Edit
-          </button>
-          <button onClick={onDelete} className="w-10 flex items-center justify-center bg-[#fff1f2] hover:bg-pink-100 text-pink-500 py-2 rounded-lg border border-pink-100 transition-all">
-            <Trash2 size={16} />
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function DeleteModal({ onConfirm, onClose }) {
-  return (
-    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white w-full max-w-[380px] rounded-[2rem] p-10 text-center shadow-2xl animate-in fade-in zoom-in duration-200">
-        <h3 className="text-xl font-bold text-slate-800 mb-10 px-4 leading-tight">Are you sure you want to delete ?</h3>
-        <div className="flex flex-col gap-3">
-          <button onClick={onConfirm} className="w-full py-3.5 bg-[#dc264e] hover:bg-[#c22043] text-white rounded-xl font-bold transition-all active:scale-95">
-            Yes
-          </button>
-          <button onClick={onClose} className="w-full py-3.5 bg-white border-2 border-gray-100 text-slate-700 hover:bg-gray-50 rounded-xl font-bold transition-all">
-            No
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function ThemeFormModal({ mode, theme, onSave, onClose }) {
-  const [form, setForm] = useState(theme);
-
-  return (
-    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center py-10 px-4">
-      <div className="bg-white w-full max-w-[650px] rounded-3xl shadow-2xl relative animate-in slide-in-from-bottom-4 duration-300 overflow-hidden flex flex-col">
-        <div className="flex justify-between items-center p-6 border-b border-gray-100">
-          <h2 className="text-xl font-bold text-slate-800">{mode === 'edit' ? "Edit World & Themes" : "Add World & Themes"}</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-slate-600 transition-colors"><X size={24} /></button>
-        </div>
-
-        <div className="p-8 overflow-y-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <FormGroup label="Title" value={form.title} onChange={v => setForm({...form, title: v})} placeholder="Write your title" />
-            
-            <div>
-              <label className="block text-xs font-bold text-slate-800 mb-2 ml-1">Image</label>
-              <div className="flex items-center border-2 border-gray-100 rounded-2xl p-1 bg-white">
-                <button className="bg-slate-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 whitespace-nowrap">
-                  <ImageIcon size={14} /> Browse Image
-                </button>
-                <div className="px-3 text-xs text-gray-400 truncate">No file chosen</div>
-              </div>
-            </div>
-          </div>
-
-          <div className="mb-6">
-            <label className="block text-xs font-bold text-slate-800 mb-2 ml-1">Blog</label>
-            <div className="border-2 border-gray-100 rounded-3xl overflow-hidden">
-              <div className="bg-gray-50 border-b border-gray-100 p-2.5 flex items-center gap-3 overflow-x-auto no-scrollbar">
-                <div className="flex items-center gap-1.5 px-2 py-1 bg-white rounded-lg border border-gray-200 text-xs font-bold">12 <ChevronRight size={12} className="rotate-90" /></div>
-                <div className="w-px h-4 bg-gray-300 mx-1" />
-                <Bold size={16} className="text-gray-400" /> <Italic size={16} className="text-gray-400" /> <Underline size={16} className="text-gray-400" />
-                <div className="w-px h-4 bg-gray-300 mx-1" />
-                <AlignLeft size={16} className="text-gray-400" /> <List size={16} className="text-gray-400" />
-              </div>
-              <textarea 
-                className="w-full p-4 text-sm outline-none min-h-[250px] resize-none placeholder:text-gray-300"
-                placeholder="type your blog"
-                value={form.content}
-                onChange={e => setForm({...form, content: e.target.value})}
-              />
-            </div>
-          </div>
-
-          <div className="flex justify-center pt-2">
-            <button 
-              onClick={() => onSave(form)}
+      {/* Add/Edit Modal */}
+      {(modalType === "add" || modalType === "edit") && (
+        <Modal
+          isOpen={true}
+          onClose={() => setModalType(null)}
+          title={modalType === "edit" ? "Edit Character" : "Add New Character"}
+          footer={
+            <button
+              onClick={handleSave}
               className="px-16 py-3.5 bg-slate-800 text-white rounded-2xl font-bold shadow-xl shadow-slate-200 hover:bg-slate-900 transition-all active:scale-95"
             >
-              {mode === 'edit' ? 'Update' : 'Create'}
+              Save Details
             </button>
+          }
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+            <InputGroup label="Character Name">
+              <Input
+                placeholder="e.g. Nessa Thorne"
+                value={selectedCharacter?.name || ""}
+                onChange={(e) =>
+                  setSelectedCharacter({
+                    ...selectedCharacter,
+                    name: e.target.value,
+                  })
+                }
+              />
+            </InputGroup>
+            <InputGroup label="Role / Title">
+              <Input
+                placeholder="e.g. Protagonist"
+                value={selectedCharacter?.role || ""}
+                onChange={(e) =>
+                  setSelectedCharacter({
+                    ...selectedCharacter,
+                    role: e.target.value,
+                  })
+                }
+              />
+            </InputGroup>
           </div>
-        </div>
-      </div>
-    </div>
-  );
-}
 
-function FormGroup({ label, value, onChange, placeholder }) {
-  return (
-    <div>
-      <label className="block text-xs font-bold text-slate-800 mb-2 ml-1">{label}</label>
-      <input 
-        type="text"
-        className="w-full p-4 bg-white border-2 border-gray-100 rounded-2xl focus:border-slate-300 outline-none text-sm placeholder:text-gray-400"
-        placeholder={placeholder}
-        value={value}
-        onChange={e => onChange(e.target.value)}
+          <InputGroup label="Short Summary">
+            <Textarea
+              placeholder="A one-sentence summary for the card..."
+              value={selectedCharacter?.description || ""}
+              onChange={(e) =>
+                setSelectedCharacter({
+                  ...selectedCharacter,
+                  description: e.target.value,
+                })
+              }
+            />
+          </InputGroup>
+
+          <InputGroup label="Profile Image">
+            <div className="flex items-center border-2 border-gray-100 rounded-2xl p-1 bg-white">
+              <button className="bg-slate-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2">
+                <ImageIcon size={14} /> Browse Image
+              </button>
+              <div className="px-3 text-xs text-gray-400 truncate">
+                No file chosen
+              </div>
+            </div>
+          </InputGroup>
+
+          <InputGroup label="Full Biography & Backstory">
+            <RichTextEditor
+              content={selectedCharacter?.bio || ""}
+              onChange={(html) =>
+                setSelectedCharacter({ ...selectedCharacter, bio: html })
+              }
+              placeholder="Tell the story of this character..."
+            />
+          </InputGroup>
+        </Modal>
+      )}
+
+      {/* Reusable Delete Modal */}
+      <DeleteConfirmModal
+        isOpen={modalType === "delete"}
+        onClose={() => setModalType(null)}
+        onConfirm={handleConfirmDelete}
+        itemName={selectedCharacter?.name}
       />
     </div>
   );

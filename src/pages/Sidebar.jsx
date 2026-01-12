@@ -244,7 +244,7 @@ const Sidebar = () => {
                     >
                       <CiCircleInfo className="mr-3 group-hover:text-black" />
                       <span className="text-dashboard group-hover:text-black">
-                        Account Settings
+                        About Us
                       </span>
                     </NavLink>
                   </li>
