@@ -1,11 +1,6 @@
 import React, { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import {
-  FaBars,
-  FaSignOutAlt,
-  FaChevronUp,
-  FaChevronRight,
-} from "react-icons/fa";
+import { FaBars, FaSignOutAlt, FaChevronRight } from "react-icons/fa";
 import logo from "../assets/FF_city_Logo 1.svg";
 import { LuLayoutDashboard } from "react-icons/lu";
 import { HiOutlineBookOpen } from "react-icons/hi";
@@ -23,34 +18,19 @@ import { toast } from "react-toastify";
 
 const Sidebar = () => {
   const navigate = useNavigate();
-  const [isOpen, setIsOpen] = useState(false);
   const [sidebarVisible, setSidebarVisible] = useState(true);
   const [logout, { isLoading }] = useLogoutMutation();
-  const toggleDropdown = () => {
-    setIsOpen(!isOpen);
-  };
 
-  // Toggles the visibility of the sidebar (expand or collapse)
   const toggleSidebar = () => {
-    // When collapsing the sidebar, close the dropdown as well
-    if (sidebarVisible) {
-      setIsOpen(false); // Close dropdown when sidebar is collapsed
-    }
     setSidebarVisible(!sidebarVisible);
   };
 
   const handleLogout = async () => {
     try {
-      // 5. Call the API
       const res = await logout().unwrap();
-
-      // 6. Clear local storage and cookies
       deleteCookie("NessasBrokenWorldAuthToken");
       localStorage.removeItem("user");
-
       toast.success(res?.message);
-
-      // 7. Redirect to login
       navigate("/login");
     } catch (err) {
       toast.error(err?.data?.message);
@@ -64,19 +44,17 @@ const Sidebar = () => {
       } bg-[#0C0E0F] text-white flex-col p-5 transition-all duration-300 min-h-screen`}
     >
       <div className="flex items-center justify-between mb-8 w-full relative">
-        {/* Logo visibility */}
         <img
           src={logo}
           alt="Logo"
           className={`h-10 w-auto ${!sidebarVisible && "hidden"}`}
         />
 
-        {/* Hamburger Button Container */}
         <div
           className={`${
             sidebarVisible
-              ? "" // Show normally when sidebar is visible
-              : "m-4 absolute inset-0 flex justify-center items-center" // Center the button when collapsed
+              ? ""
+              : "m-4 absolute inset-0 flex justify-center items-center"
           }`}
         >
           <button
@@ -93,13 +71,13 @@ const Sidebar = () => {
       {sidebarVisible && (
         <>
           <nav>
-            <ul>
+            <ul className="space-y-1">
               {/* Dashboard Link */}
               <li>
                 <NavLink
                   to="/dashboard"
                   className={({ isActive }) =>
-                    `py-2 rounded flex items-center group ${
+                    `py-2 rounded flex items-center group transition-colors ${
                       isActive
                         ? "bg-white text-neutral-900"
                         : "hover:bg-neutral-800"
@@ -118,7 +96,7 @@ const Sidebar = () => {
                 <NavLink
                   to="/books"
                   className={({ isActive }) =>
-                    `py-2 rounded flex items-center group ${
+                    `py-2 rounded flex items-center group transition-colors ${
                       isActive
                         ? "bg-white text-neutral-900"
                         : "hover:bg-neutral-800"
@@ -137,7 +115,7 @@ const Sidebar = () => {
                 <NavLink
                   to="/characters"
                   className={({ isActive }) =>
-                    `py-2 rounded flex items-center group ${
+                    `py-2 rounded flex items-center group transition-colors ${
                       isActive
                         ? "bg-white text-neutral-900"
                         : "hover:bg-neutral-800"
@@ -156,7 +134,7 @@ const Sidebar = () => {
                 <NavLink
                   to="/blogs"
                   className={({ isActive }) =>
-                    `py-2 rounded flex items-center group ${
+                    `py-2 rounded flex items-center group transition-colors ${
                       isActive
                         ? "bg-white text-neutral-900"
                         : "hover:bg-neutral-800"
@@ -175,7 +153,7 @@ const Sidebar = () => {
                 <NavLink
                   to="/worldandthemes"
                   className={({ isActive }) =>
-                    `py-2 rounded flex items-center group ${
+                    `py-2 rounded flex items-center group transition-colors ${
                       isActive
                         ? "bg-white text-neutral-900"
                         : "hover:bg-neutral-800"
@@ -189,36 +167,26 @@ const Sidebar = () => {
                 </NavLink>
               </li>
 
-              {/* Dropdown for Settings */}
-              <li>
-                <button
-                  onClick={toggleDropdown}
-                  className="py-2 rounded flex items-center w-full group"
-                >
+              {/* Settings Group */}
+              <li className="relative group/parent">
+                {" "}
+                {/* Unique group name for visibility logic */}
+                <button className="py-2 rounded flex items-center w-full group transition-colors hover:bg-neutral-800">
                   <IoSettingsOutline className="mr-3 group-hover:text-black" />
                   <span className="text-dashboard group-hover:text-black">
                     Settings
                   </span>
-                  <span
-                    className={`ml-auto group-hover:text-black ${
-                      isOpen ? "rotate-180" : ""
-                    }`}
-                  >
-                    {isOpen ? <FaChevronUp /> : <FaChevronRight />}
+                  <span className="ml-auto">
+                    <FaChevronRight className="transition-all group-hover:rotate-90" />
                   </span>
                 </button>
-
-                {/* Apply a smooth transition to the dropdown */}
-                <ul
-                  className={`pl-6 mt-2 space-y-2 overflow-hidden transition-all duration-300 ease-in-out ${
-                    isOpen ? "max-h-60" : "max-h-0"
-                  }`}
-                >
+                {/* Sub-menu: Visible only when parent <li> is hovered */}
+                <ul className="pl-6 mt-2 space-y-1 hidden group-hover/parent:block">
                   <li>
                     <NavLink
                       to="/editprofile"
                       className={({ isActive }) =>
-                        `py-2 rounded flex items-center group ${
+                        `py-2 rounded flex items-center group transition-colors ${
                           isActive
                             ? "bg-white text-neutral-900"
                             : "hover:bg-neutral-800"
@@ -235,7 +203,7 @@ const Sidebar = () => {
                     <NavLink
                       to="/accountsettings"
                       className={({ isActive }) =>
-                        `py-2 rounded flex items-center group ${
+                        `py-2 rounded flex items-center group transition-colors ${
                           isActive
                             ? "bg-white text-neutral-900"
                             : "hover:bg-neutral-800"
@@ -252,7 +220,7 @@ const Sidebar = () => {
                     <NavLink
                       to="/privacysettings"
                       className={({ isActive }) =>
-                        `py-2 rounded flex items-center group ${
+                        `py-2 rounded flex items-center group transition-colors ${
                           isActive
                             ? "bg-white text-neutral-900"
                             : "hover:bg-neutral-800"
@@ -269,7 +237,7 @@ const Sidebar = () => {
                     <NavLink
                       to="/termsandconditions"
                       className={({ isActive }) =>
-                        `py-2 rounded flex items-center group ${
+                        `py-2 rounded flex items-center group transition-colors ${
                           isActive
                             ? "bg-white text-neutral-900"
                             : "hover:bg-neutral-800"

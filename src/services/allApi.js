@@ -56,6 +56,33 @@ const allApi = createApi({
         body: data,
       }),
     }),
+    getUserInfo: builder.query({
+      query: () => ({
+        url: "/auth/me",
+        method: "GET",
+      }),
+    }),
+    uploadProfileImage: builder.mutation({
+      query: (formData) => ({
+        url: "/users/profile-image",
+        method: "PUT",
+        body: formData,
+      }),
+    }),
+    updateProfile: builder.mutation({
+      query: (data) => ({
+        url: "/users/profile-update",
+        method: "PUT",
+        body: data, // Sending { name: "..." }
+      }),
+    }),
+    adminChangePassword: builder.mutation({
+      query: (data) => ({
+        url: "/auth/change-password",
+        method: "PUT",
+        body: data,
+      }),
+    }),
   }),
 });
 
@@ -66,6 +93,10 @@ export const {
   useVerifyOtpMutation,
   useResendOtpMutation,
   useChangePasswordMutation,
+  useGetUserInfoQuery,
+  useUploadProfileImageMutation,
+  useUpdateProfileMutation,
+  useAdminChangePasswordMutation,
 } = allApi;
 
 export default allApi;
