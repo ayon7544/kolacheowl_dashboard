@@ -7,8 +7,7 @@ import {
   Calendar,
   Image as ImageIcon,
 } from "lucide-react";
-
-import { TextEditor } from "../components/TextEditor";
+import TextEditor from "../components/TextEditor";
 import { Modal } from "../components/Modal";
 import { Card } from "../components/Card";
 import { Input, InputGroup } from "../components/Form";

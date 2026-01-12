@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { CheckCircle2 } from "lucide-react";
-import { TextEditor } from "../components/TextEditor";
+import TextEditor from "../components/TextEditor";
 export default function AboutUsManagement() {
   const [content, setContent] = useState(
     "<p>By using the app, you agree to create an account and keep your login information secure. Users can book appointments, and service providers manage availability and appointments. Payments are handled between users and providers.</p><p>Education also nurtures empathy and cultural awareness, featuring a more inclusive and understanding society. By learning about diverse perspectives and histories, we become more open-minded and respectful of differences.</p>"

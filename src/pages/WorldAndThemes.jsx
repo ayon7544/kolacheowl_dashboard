@@ -15,8 +15,7 @@ import { Card } from "../components/Card";
 import { Input, InputGroup, Textarea } from "../components/Form";
 import { DeleteConfirmModal } from "../components/DeleteConfirmModal";
 import { Pagination } from "../components/Pagination";
-import { TextEditor } from "../components/TextEditor";
-
+import TextEditor from "../components/TextEditor";
 const INITIAL_CHARACTERS = [
   {
     id: 1,

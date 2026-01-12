@@ -181,3 +181,4 @@ export const TextEditor = ({ content, onChange }) => {
     </div>
   );
 };
+export default TextEditor;

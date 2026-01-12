@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { CheckCircle2 } from "lucide-react";
-import { TextEditor } from "../components/TextEditor";
-
+import TextEditor from "../components/TextEditor";
 export default function TermsConditionsManagement() {
   const [content, setContent] = useState(
     "<h2>Terms & Conditions</h2><p>Education also nurtures empathy and cultural awareness, featuring a more inclusive and understanding society. By learning about diverse perspectives and histories, we become more open-minded.</p>"

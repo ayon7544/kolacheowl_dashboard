@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { CheckCircle2 } from "lucide-react";
-import { TextEditor } from "../components/TextEditor";
-
+import TextEditor from "../components/TextEditor";
 export default function PrivacyPolicyManagement() {
   const [content, setContent] = useState(
     "<h2>Privacy Policy</h2><p>By using the app, you agree to create an account and keep your login information secure. Users can book appointments, and service providers manage availability and appointments.</p>"
