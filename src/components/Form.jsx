@@ -17,6 +17,6 @@ export const Input = (props) => (
 export const Textarea = (props) => (
   <textarea
     {...props}
-    className="w-full p-4 bg-white border-2 border-gray-100 rounded-2xl focus:border-slate-300 outline-none text-sm min-h-[120px] resize-none transition-all"
+    className="w-full p-4 bg-white border-2 border-gray-100 rounded-2xl focus:border-slate-300 outline-none text-sm min-h-30 resize-none transition-all"
   />
 );

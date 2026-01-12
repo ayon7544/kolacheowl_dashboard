@@ -8,11 +8,11 @@ export const Card = ({ image, title, subtitle, children, actions }) => {
           <img src={image} alt={title} className="w-full h-full object-cover rounded-2xl" />
         </div>
       )}
-      <div className="p-6 flex flex-col flex-grow">
+      <div className="p-6 flex flex-col grow">
         {title && <h3 className="text-lg font-bold text-slate-800 mb-1">{title}</h3>}
         {subtitle && <p className="text-sm text-gray-400 font-medium mb-3">{subtitle}</p>}
         
-        <div className="text-gray-500 text-sm leading-relaxed flex-grow">
+        <div className="text-gray-500 text-sm leading-relaxed grow">
           {children}
         </div>
 

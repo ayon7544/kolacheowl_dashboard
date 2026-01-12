@@ -29,13 +29,13 @@ export default function AboutUsManagement() {
     <div className="min-h-screen bg-white flex flex-col items-center p-6 md:p-12 font-sans text-slate-800">
       
       {/* Title Section */}
-      <div className="w-full max-w-[900px] mb-8">
+      <div className="w-full max-w-225 mb-8">
         <h1 className="text-3xl font-bold text-slate-900 mb-2">About Us Content</h1>
         <p className="text-gray-500 text-sm">Update the information displayed on your public 'About' page.</p>
       </div>
 
       {/* Editor Container */}
-      <div className="w-full max-w-[900px]">
+      <div className="w-full max-w-225">
         
         {/* Main Editor Component */}
         <div className="w-full mb-6">

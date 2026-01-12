@@ -21,7 +21,7 @@ export default function PrivacyPolicyManagement() {
 
   return (
     <div className="min-h-screen bg-white flex flex-col items-center p-6 md:p-12 font-sans text-slate-800">
-      <div className="w-full max-w-[900px] mb-10 text-center">
+      <div className="w-full max-w-225 mb-10 text-center">
         <h1 className="text-3xl font-bold text-slate-900 mb-2">
           Privacy Policy
         </h1>
@@ -30,7 +30,7 @@ export default function PrivacyPolicyManagement() {
         </p>
       </div>
 
-      <div className="w-full max-w-[900px]">
+      <div className="w-full max-w-225">
         <RichTextEditor
           content={content}
           onChange={(html) => setContent(html)}

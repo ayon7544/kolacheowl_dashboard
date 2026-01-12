@@ -39,7 +39,7 @@ export default function ProfileManagement() {
   return (
     <div className="min-h-screen bg-white flex flex-col items-center p-6 md:pt-20 font-sans text-slate-800">
       {/* Profile Header Card */}
-      <div className="w-full max-w-[800px] bg-[#333333] rounded-[2.5rem] p-8 mb-10 relative flex flex-col items-center shadow-xl">
+      <div className="w-full max-w-200 bg-[#333333] rounded-[2.5rem] p-8 mb-10 relative flex flex-col items-center shadow-xl">
         <div className="relative">
           <div className="w-24 h-24 rounded-full border-4 border-white overflow-hidden bg-slate-200">
             <img
@@ -62,7 +62,7 @@ export default function ProfileManagement() {
       </div>
 
       {/* Navigation Tabs */}
-      <div className="flex gap-10 mb-8 border-b border-gray-100 w-full max-w-[500px] justify-center">
+      <div className="flex gap-10 mb-8 border-b border-gray-100 w-full max-w-125 justify-center">
         <button
           onClick={() => setActiveTab("edit-profile")}
           className={`pb-2 text-sm font-bold transition-all ${
@@ -87,13 +87,13 @@ export default function ProfileManagement() {
 
       {/* SUCCESS MESSAGE */}
       {showSuccess && (
-        <div className="w-full max-w-[500px] mb-6 p-4 bg-emerald-50 border border-emerald-100 text-emerald-700 rounded-2xl flex items-center gap-3 text-sm font-medium animate-in zoom-in duration-300">
+        <div className="w-full max-w-125 mb-6 p-4 bg-emerald-50 border border-emerald-100 text-emerald-700 rounded-2xl flex items-center gap-3 text-sm font-medium animate-in zoom-in duration-300">
           <CheckCircle2 size={18} /> Settings updated successfully!
         </div>
       )}
 
       {/* --- CONDITIONAL RENDERING LOGIC --- */}
-      <div className="w-full max-w-[500px] animate-in fade-in slide-in-from-bottom-2 duration-400">
+      <div className="w-full max-w-125 animate-in fade-in slide-in-from-bottom-2 duration-400">
         {activeTab === "edit-profile" ? (
           /* VIEW 1: EDIT PROFILE */
           <form onSubmit={handleSave} className="space-y-6">

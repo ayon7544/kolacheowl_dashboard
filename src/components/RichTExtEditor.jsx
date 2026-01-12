@@ -44,7 +44,7 @@ const MenuBar = ({ editor }) => {
   `;
 
   const Divider = () => (
-    <div className="w-[1px] h-6 bg-gray-200 mx-1 self-center" />
+    <div className="w-px h-6 bg-gray-200 mx-1 self-center" />
   );
 
   return (
@@ -171,7 +171,7 @@ export const RichTextEditor = ({ content, onChange }) => {
   return (
     <div className="w-full border rounded-xl shadow-sm bg-white overflow-hidden border-gray-200 focus-within:ring-2 focus-within:ring-blue-100 transition-all">
       <MenuBar editor={editor} />
-      <div className="max-h-[600px] overflow-y-auto">
+      <div className="max-h-150 overflow-y-auto">
         <EditorContent editor={editor} />
       </div>
       <div className="px-4 py-2 border-t bg-gray-50 text-[10px] text-gray-400 flex justify-between">

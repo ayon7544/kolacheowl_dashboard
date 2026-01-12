@@ -143,7 +143,7 @@ export default function Characters() {
             <p className="text-gray-400 text-xs font-bold mb-3 uppercase tracking-wider">
               {char.title}
             </p>
-            <p className="text-gray-500 text-xs leading-relaxed mb-4 flex-grow line-clamp-3 italic">
+            <p className="text-gray-500 text-xs leading-relaxed mb-4 grow line-clamp-3 italic">
               "{char.famousLine}"
             </p>
             <p className="text-slate-600 text-xs leading-relaxed line-clamp-2 bg-slate-50 p-2 rounded-lg">
