@@ -8,7 +8,6 @@ import {
   Image as ImageIcon,
 } from "lucide-react";
 
-// Components
 import { RichTextEditor } from "../components/RichTextEditor";
 import { Modal } from "../components/Modal";
 import { Card } from "../components/Card";
