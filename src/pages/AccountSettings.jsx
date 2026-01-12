@@ -1,9 +1,6 @@
-import React, { useState } from 'react';
-import { CheckCircle2 } from 'lucide-react';
-
-// Reusable Component Imports
+import React, { useState } from "react";
+import { CheckCircle2 } from "lucide-react";
 import { RichTextEditor } from "../components/RichTextEditor";
-
 export default function AboutUsManagement() {
   // --- STATE ---
   const [content, setContent] = useState(
@@ -15,7 +12,7 @@ export default function AboutUsManagement() {
   // --- HANDLERS ---
   const handleSave = () => {
     setIsSaving(true);
-    
+
     // Mock API call
     setTimeout(() => {
       setIsSaving(false);
@@ -27,16 +24,18 @@ export default function AboutUsManagement() {
 
   return (
     <div className="min-h-screen bg-white flex flex-col items-center p-6 md:p-12 font-sans text-slate-800">
-      
       {/* Title Section */}
       <div className="w-full max-w-225 mb-8">
-        <h1 className="text-3xl font-bold text-slate-900 mb-2">About Us Content</h1>
-        <p className="text-gray-500 text-sm">Update the information displayed on your public 'About' page.</p>
+        <h1 className="text-3xl font-bold text-slate-900 mb-2">
+          About Us Content
+        </h1>
+        <p className="text-gray-500 text-sm">
+          Update the information displayed on your public 'About' page.
+        </p>
       </div>
 
       {/* Editor Container */}
       <div className="w-full max-w-225">
-        
         {/* Main Editor Component */}
         <div className="w-full mb-6">
           <RichTextEditor
@@ -62,8 +61,8 @@ export default function AboutUsManagement() {
             onClick={handleSave}
             disabled={isSaving}
             className={`w-full py-4 rounded-2xl font-bold text-lg shadow-xl transition-all active:scale-[0.98] tracking-wide ${
-              isSaving 
-                ? "bg-slate-400 cursor-not-allowed" 
+              isSaving
+                ? "bg-slate-400 cursor-not-allowed"
                 : "bg-[#1e293b] text-white hover:bg-slate-800 shadow-slate-200"
             }`}
           >
