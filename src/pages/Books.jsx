@@ -431,7 +431,7 @@ export default function BooksManagement() {
                     <ImageIcon size={16} /> Choose Image
                   </div>
                 </FileUploader>
-                <span className="text-xs text-slate-400 truncate max-w-[150px]">
+                <span className="text-xs text-slate-400 truncate max-w-37.5">
                   {selectedBook?.imageFile
                     ? selectedBook.imageFile.name
                     : "jpeg, png supported"}
@@ -449,7 +449,7 @@ export default function BooksManagement() {
                     setSelectedBook({ ...selectedBook, pdfFile: file })
                   }
                   accept=".pdf"
-                  className="border-2 border-dashed border-slate-200 rounded-[2rem] p-12 flex flex-col items-center justify-center bg-slate-50/50 hover:bg-slate-50 hover:border-slate-300 transition-all cursor-pointer"
+                  className="border-2 border-dashed border-slate-200 rounded-4xl p-12 flex flex-col items-center justify-center bg-slate-50/50 hover:bg-slate-50 hover:border-slate-300 transition-all cursor-pointer"
                 >
                   <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-slate-400 mb-4 shadow-sm">
                     <UploadCloud size={32} />
@@ -516,7 +516,7 @@ function MetaItem({ icon: Icon, label, value }) {
         <p className="text-[10px] uppercase font-black tracking-widest text-slate-400 leading-none mb-1">
           {label}
         </p>
-        <p className="text-xs font-bold text-slate-800 truncate max-w-[120px]">
+        <p className="text-xs font-bold text-slate-800 truncate max-w-30">
           {value}
         </p>
       </div>
