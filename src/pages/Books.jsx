@@ -10,6 +10,8 @@ import {
   Image as ImageIcon,
   ExternalLink,
   AlertCircle,
+  Eye,
+  EyeOff, // Added for status icons
 } from "lucide-react";
 import { toast } from "react-toastify";
 
@@ -50,7 +52,6 @@ export default function BooksManagement() {
   const [deleteBook, { isLoading: isDeleting }] = useDeleteBookMutation();
 
   // --- EFFECTS ---
-  // Debounce search input
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchTerm);
@@ -59,7 +60,6 @@ export default function BooksManagement() {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  // Memory cleanup for local Blob URLs
   useEffect(() => {
     return () => {
       if (imagePreview && imagePreview.startsWith("blob:")) {
@@ -76,6 +76,7 @@ export default function BooksManagement() {
       writerName: "",
       description: "",
       featuredRelease: false,
+      isActive: true, // DEFAULT VALUE ADDED
       aboutBook: "",
       imageFile: null,
       pdfFile: null,
@@ -105,20 +106,17 @@ export default function BooksManagement() {
   const handleSave = async () => {
     const formData = new FormData();
 
-    // 1. Prepare JSON payload for text fields
     const payload = {
       title: selectedBook.title,
       writerName: selectedBook.writerName,
       description: selectedBook.description,
       aboutBook: selectedBook.aboutBook,
       featuredRelease: selectedBook.featuredRelease,
-      isActive: selectedBook.isActive || false,
+      isActive: selectedBook.isActive, // DATA CAPTURED HERE
     };
 
-    // 2. Wrap text data in 'data' key as string
     formData.append("data", JSON.stringify(payload));
 
-    // 3. Append files with backend-specific keys
     if (selectedBook.imageFile) {
       formData.append("thumbnail", selectedBook.imageFile);
     }
@@ -137,10 +135,7 @@ export default function BooksManagement() {
       setModalType(null);
       refetch();
     } catch (err) {
-      console.log(err);
-      toast.error(
-        err?.data?.message || "Operation failed. Please check your inputs."
-      );
+      toast.error(err?.data?.message || "Operation failed.");
     }
   };
 
@@ -155,7 +150,6 @@ export default function BooksManagement() {
     }
   };
 
-  // --- RENDER LOADING ---
   if (isLoading) return <LegalSkeleton />;
 
   return (
@@ -203,6 +197,16 @@ export default function BooksManagement() {
               key={book.id}
               title={book.title}
               image={book.thumbnail}
+              active={book.isActive}
+              latestUpdate={
+                book.updatedAt
+                  ? new Date(book.updatedAt).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })
+                  : "Never"
+              }
               actions={
                 <>
                   <button
@@ -226,16 +230,49 @@ export default function BooksManagement() {
               <p className="text-gray-500 text-sm leading-relaxed mb-6 line-clamp-2 italic">
                 "{book.description}"
               </p>
-              <div className="flex items-center gap-6 mb-2">
+
+              <div className="flex flex-wrap items-center gap-6 mb-2">
+                {/* 1. WRITER INFO */}
                 <MetaItem icon={Tag} label="Writer" value={book.writerName} />
+
+                {/* 2. LATEST UPDATE INFO */}
                 <MetaItem
                   icon={Calendar}
-                  label="Added"
-                  value={new Date(book.createdAt).toLocaleDateString("en-US", {
-                    month: "short",
-                    year: "numeric",
-                  })}
+                  label="Updated"
+                  value={
+                    book.updatedAt
+                      ? new Date(book.updatedAt).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                        })
+                      : "N/A"
+                  }
                 />
+
+                {/* 3. VISIBILITY STATUS */}
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`p-2.5 rounded-xl transition-colors ${
+                      book.isActive
+                        ? "bg-emerald-50 text-emerald-600"
+                        : "bg-slate-100 text-slate-400"
+                    }`}
+                  >
+                    {book.isActive ? <Eye size={18} /> : <EyeOff size={18} />}
+                  </div>
+                  <div>
+                    <p className="text-[10px] uppercase font-black tracking-widest text-slate-400 leading-none mb-1">
+                      Status
+                    </p>
+                    <p
+                      className={`text-xs font-bold ${
+                        book.isActive ? "text-emerald-700" : "text-slate-500"
+                      }`}
+                    >
+                      {book.isActive ? "Active" : "Inactive"}
+                    </p>
+                  </div>
+                </div>
               </div>
             </Card>
           ))
@@ -243,13 +280,12 @@ export default function BooksManagement() {
           <div className="col-span-full py-20 flex flex-col items-center justify-center text-gray-400">
             <AlertCircle size={48} className="mb-4 opacity-20" />
             <p className="text-lg font-medium">
-              No books found matching your criteria
+              No books found matching your search
             </p>
           </div>
         )}
       </div>
 
-      {/* Pagination Container */}
       <div className="mt-12">
         <Pagination
           currentPage={currentPage}
@@ -301,7 +337,7 @@ export default function BooksManagement() {
             </div>
           </div>
 
-          {/* Form Fields */}
+          {/* Form Fields: Title and Author */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <InputGroup label="Book Title">
               <Input
@@ -341,27 +377,14 @@ export default function BooksManagement() {
             </InputGroup>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-6 items-end">
-            <InputGroup label="Update Thumbnail">
-              <div className="flex items-center gap-4 bg-white border-2 border-slate-100 p-2 rounded-2xl">
-                <FileUploader onFileSelect={handleImageSelect} accept="image/*">
-                  <div className="bg-slate-800 text-white px-5 py-3 rounded-xl text-xs font-bold flex items-center gap-2 cursor-pointer hover:bg-slate-700 transition-colors">
-                    <ImageIcon size={16} /> Choose Image
-                  </div>
-                </FileUploader>
-                <span className="text-xs text-slate-400 truncate max-w-[150px]">
-                  {selectedBook?.imageFile
-                    ? selectedBook.imageFile.name
-                    : "jpeg, png supported"}
-                </span>
-              </div>
-            </InputGroup>
-
+          {/* TOGGLES: Featured and Visibility Status */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-6">
             <InputGroup label="Set as Featured?">
               <div className="flex gap-4 p-1 bg-slate-50 rounded-2xl">
                 {[true, false].map((val) => (
                   <button
                     key={val.toString()}
+                    type="button"
                     onClick={() =>
                       setSelectedBook({ ...selectedBook, featuredRelease: val })
                     }
@@ -376,19 +399,54 @@ export default function BooksManagement() {
                 ))}
               </div>
             </InputGroup>
+
+            <InputGroup label="Visibility Status">
+              <div className="flex gap-4 p-1 bg-slate-50 rounded-2xl">
+                {[true, false].map((val) => (
+                  <button
+                    key={val.toString()}
+                    type="button"
+                    onClick={() =>
+                      setSelectedBook({ ...selectedBook, isActive: val })
+                    }
+                    className={`flex-1 py-3 px-4 rounded-xl text-xs font-bold transition-all ${
+                      selectedBook?.isActive === val
+                        ? "bg-white text-slate-900 shadow-sm"
+                        : "text-slate-400 hover:text-slate-600"
+                    }`}
+                  >
+                    {val ? "Active" : "Inactive"}
+                  </button>
+                ))}
+              </div>
+            </InputGroup>
           </div>
 
-          {/* PDF Management */}
+          {/* Thumbnail Upload */}
+          <div className="mt-6">
+            <InputGroup label="Update Thumbnail">
+              <div className="flex items-center gap-4 bg-white border-2 border-slate-100 p-2 rounded-2xl">
+                <FileUploader onFileSelect={handleImageSelect} accept="image/*">
+                  <div className="bg-slate-800 text-white px-5 py-3 rounded-xl text-xs font-bold flex items-center gap-2 cursor-pointer hover:bg-slate-700 transition-colors">
+                    <ImageIcon size={16} /> Choose Image
+                  </div>
+                </FileUploader>
+                <span className="text-xs text-slate-400 truncate max-w-[150px]">
+                  {selectedBook?.imageFile
+                    ? selectedBook.imageFile.name
+                    : "jpeg, png supported"}
+                </span>
+              </div>
+            </InputGroup>
+          </div>
+
+          {/* PDF Management: Upload and Restore Preview Link */}
           <div className="mt-10">
             <InputGroup label="Book Document (PDF)">
               <div className="flex flex-col gap-4">
                 <FileUploader
                   onFileSelect={(file) =>
-                    setSelectedBook({
-                      ...selectedBook,
-                      pdfFile: file,
-                      pdfName: file.name,
-                    })
+                    setSelectedBook({ ...selectedBook, pdfFile: file })
                   }
                   accept=".pdf"
                   className="border-2 border-dashed border-slate-200 rounded-[2rem] p-12 flex flex-col items-center justify-center bg-slate-50/50 hover:bg-slate-50 hover:border-slate-300 transition-all cursor-pointer"
@@ -401,12 +459,9 @@ export default function BooksManagement() {
                       ? selectedBook.pdfFile.name
                       : "Click or drag to upload PDF"}
                   </p>
-                  <p className="text-xs text-slate-400 mt-1">
-                    Maximum file size: 20MB
-                  </p>
                 </FileUploader>
 
-                {/* PDF Live View */}
+                {/* Restored Preview Link */}
                 {(selectedBook?.bookPdf || selectedBook?.pdfFile) && (
                   <button
                     type="button"
@@ -425,6 +480,7 @@ export default function BooksManagement() {
             </InputGroup>
           </div>
 
+          {/* Detailed Editor */}
           <div className="mt-10">
             <InputGroup label="About Book (Detailed Metadata)">
               <TextEditor
@@ -439,7 +495,6 @@ export default function BooksManagement() {
         </Modal>
       )}
 
-      {/* Delete Confirmation */}
       <DeleteConfirmModal
         isOpen={modalType === "delete"}
         onClose={() => setModalType(null)}
@@ -451,7 +506,6 @@ export default function BooksManagement() {
   );
 }
 
-// --- HELPER SUB-COMPONENT ---
 function MetaItem({ icon: Icon, label, value }) {
   return (
     <div className="flex items-center gap-3">
