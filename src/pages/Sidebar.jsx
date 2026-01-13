@@ -37,11 +37,7 @@ const Sidebar = () => {
     }
   };
 
-  /**
-   * Reusable Component for Sidebar Links
-   * Handles the "Active" logic (White bg / Black text)
-   * and "Hover" logic (Neutral-800 bg / White text)
-   */
+  // Reusable Link Component to keep the Dashboard style consistent
   const SidebarItem = ({ to, icon: Icon, label }) => (
     <li>
       <NavLink
@@ -74,43 +70,41 @@ const Sidebar = () => {
 
   return (
     <div
-      className={`flex ${
-        sidebarVisible ? "w-64" : "w-0 overflow-hidden"
-      } bg-[#0C0E0F] text-white flex-col p-5 transition-all duration-300 min-h-screen border-r border-neutral-800`}
+      className={`flex flex-col p-5 transition-all duration-300 min-h-screen bg-[#0C0E0F] text-white ${
+        sidebarVisible ? "w-64" : "w-24"
+      }`}
     >
-      {/* Header / Logo Section */}
+      {/* HEADER SECTION - Toggle functionality exactly like your image */}
       <div className="flex items-center justify-between mb-8 w-full relative">
-        <img
-          src={logo}
-          alt="Logo"
-          className={`h-10 w-auto transition-opacity duration-300 ${
-            !sidebarVisible ? "opacity-0" : "opacity-100"
-          }`}
-        />
+        {sidebarVisible && (
+          <img src={logo} alt="Logo" className="h-10 w-auto transition-all" />
+        )}
 
         <div
           className={`${
             sidebarVisible
               ? ""
-              : "absolute left-0 top-0 flex justify-center items-center"
+              : "absolute inset-0 flex justify-center items-center m-3"
           }`}
         >
           <button
             onClick={toggleSidebar}
             className={`${
-              sidebarVisible ? "h-full" : "h-12 w-12 bg-neutral-800 rounded-2xl"
-            } text-white flex items-center justify-center focus:outline-none hover:bg-neutral-700 transition-colors`}
+              sidebarVisible
+                ? "h-full"
+                : "h-14 w-10  flex items-center justify-center border-neutral-800 shadow-xl"
+            } text-white focus:outline-none transition-all duration-300 hover:bg-neutral-900`}
           >
             <FaBars className="w-5 h-5" />
           </button>
         </div>
       </div>
 
-      {sidebarVisible && (
+      {/* FULL SIDEBAR CONTENT */}
+      {sidebarVisible ? (
         <>
           <nav className="flex-1">
             <ul className="space-y-2">
-              {/* Main Navigation */}
               <SidebarItem
                 to="/dashboard"
                 icon={LuLayoutDashboard}
@@ -133,8 +127,8 @@ const Sidebar = () => {
                 label="World & Themes"
               />
 
-              {/* Settings Dropdown Group */}
-              <li className="relative group/parent pt-2">
+              {/* Settings Dropdown */}
+              <li className="relative group/parent">
                 <button className="w-full px-4 py-3 rounded-2xl flex items-center group transition-all text-white hover:bg-neutral-800">
                   <IoSettingsOutline className="mr-3 size-5 group-hover:text-white" />
                   <span className="font-medium group-hover:text-white">
@@ -145,7 +139,6 @@ const Sidebar = () => {
                   </span>
                 </button>
 
-                {/* Sub-menu: Hidden by default, shows on parent hover */}
                 <ul className="pl-4 mt-2 space-y-2 hidden group-hover/parent:block border-l border-neutral-800 ml-4">
                   <SidebarItem
                     to="/editprofile"
@@ -172,8 +165,7 @@ const Sidebar = () => {
             </ul>
           </nav>
 
-          {/* Footer / Logout */}
-          <div className="pt-4 border-t border-neutral-800">
+          <div className="mt-auto pt-4 border-t border-neutral-800">
             <button
               onClick={handleLogout}
               disabled={isLoading}
@@ -186,6 +178,33 @@ const Sidebar = () => {
             </button>
           </div>
         </>
+      ) : (
+        /* ICON-ONLY NAVIGATION (When sidebar is collapsed) */
+        <nav className="flex flex-col items-center space-y-8 mt-4 flex-1">
+          <LuLayoutDashboard
+            className="size-6 text-neutral-500 hover:text-white cursor-pointer"
+            onClick={() => navigate("/dashboard")}
+          />
+          <HiOutlineBookOpen
+            className="size-6 text-neutral-500 hover:text-white cursor-pointer"
+            onClick={() => navigate("/books")}
+          />
+          <LiaUserFriendsSolid
+            className="size-6 text-neutral-500 hover:text-white cursor-pointer"
+            onClick={() => navigate("/characters")}
+          />
+          <IoSettingsOutline
+            className="size-6 text-neutral-500 hover:text-white cursor-pointer"
+            onClick={toggleSidebar}
+          />
+
+          <div className="mt-auto pb-4">
+            <FaSignOutAlt
+              className="size-6 text-neutral-500 hover:text-red-400 cursor-pointer"
+              onClick={handleLogout}
+            />
+          </div>
+        </nav>
       )}
     </div>
   );
