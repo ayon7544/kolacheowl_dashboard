@@ -8,62 +8,108 @@ import {
   Image as ImageIcon,
 } from "lucide-react";
 
-// Import the same General UI Components used in Books
+// Shared Components
 import { Modal } from "../components/Modal";
 import { Card } from "../components/Card";
 import { Input, InputGroup, Textarea } from "../components/Form";
+import { Pagination } from "../components/Pagination";
 
-const INITIAL_CHARACTERS = [
-  {
-    id: 1,
-    name: "Nessa",
-    title: "The Fractured Soul",
-    background: "A woman caught between realities...",
-    famousLine: "The pieces don't fit because the world is broken.",
-    image:
-      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=500",
-  },
-  {
-    id: 2,
-    name: "Kael",
-    title: "The Shadow Walker",
-    background: "A mysterious figure...",
-    famousLine: "Shadows only exist where there is light.",
-    image:
-      "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=500",
-  },
-];
+// API Hooks
+import {
+  useGetCharactersQuery, // Adjust hook names based on your allApi.js
+  useCreateCharacterMutation,
+  useUpdateCharacterMutation,
+  useDeleteCharacterMutation,
+} from "../services/allApi";
 
 export default function Characters() {
-  const [characters, setCharacters] = useState(INITIAL_CHARACTERS);
+  // --- API HOOKS ---
+  const { data: charactersData, isLoading } = useGetCharactersQuery();
+  const [createCharacter, { isLoading: isCreating }] =
+    useCreateCharacterMutation();
+  const [updateCharacter, { isLoading: isUpdating }] =
+    useUpdateCharacterMutation();
+  const [deleteCharacter] = useDeleteCharacterMutation();
+
+  // --- LOCAL STATE ---
   const [searchTerm, setSearchTerm] = useState("");
   const [modalType, setModalType] = useState(null);
   const [selectedCharacter, setSelectedCharacter] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
+  // --- FILTERING ---
   const filteredCharacters = useMemo(() => {
-    return characters.filter(
+    const list = charactersData?.data || [];
+    return list.filter(
       (char) =>
-        char.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        char.title.toLowerCase().includes(searchTerm.toLowerCase())
+        char.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        char.title?.toLowerCase().includes(searchTerm.toLowerCase())
     );
-  }, [characters, searchTerm]);
+  }, [charactersData, searchTerm]);
 
-  const handleSave = () => {
-    if (modalType === "edit") {
-      setCharacters((prev) =>
-        prev.map((c) => (c.id === selectedCharacter.id ? selectedCharacter : c))
-      );
-    } else {
-      setCharacters((prev) => [
-        {
-          ...selectedCharacter,
-          id: Date.now(),
-          image: INITIAL_CHARACTERS[0].image,
-        },
-        ...prev,
-      ]);
+  // --- HANDLERS ---
+  const handleOpenAdd = () => {
+    setSelectedCharacter({
+      name: "",
+      title: "",
+      description: "",
+      famousLine: "",
+      isActive: true,
+    });
+    setImageFile(null);
+    setModalType("add");
+  };
+
+  const handleOpenEdit = (char) => {
+    setSelectedCharacter({
+      ...char,
+      description: char.description || char.background,
+    });
+    setImageFile(null);
+    setModalType("edit");
+  };
+
+  const handleSave = async () => {
+    const formData = new FormData();
+
+    // The JSON data format you requested
+    const jsonData = {
+      name: selectedCharacter.name,
+      title: selectedCharacter.title,
+      description: selectedCharacter.description,
+      famousLine: selectedCharacter.famousLine,
+      isActive: selectedCharacter.isActive ?? false,
+    };
+
+    formData.append("data", JSON.stringify(jsonData));
+
+    if (imageFile) {
+      formData.append("image", imageFile);
     }
-    setModalType(null);
+
+    try {
+      if (modalType === "edit") {
+        await updateCharacter({
+          id: selectedCharacter.id,
+          data: formData,
+        }).unwrap();
+      } else {
+        await createCharacter(formData).unwrap();
+      }
+      setModalType(null);
+    } catch (error) {
+      console.error("Operation failed:", error);
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    try {
+      await deleteCharacter(selectedCharacter.id).unwrap();
+      setModalType(null);
+    } catch (error) {
+      console.error("Delete failed:", error);
+    }
   };
 
   return (
@@ -79,17 +125,8 @@ export default function Characters() {
           </p>
         </div>
         <button
-          onClick={() => {
-            setSelectedCharacter({
-              name: "",
-              title: "",
-              background: "",
-              famousLine: "",
-              image: "",
-            });
-            setModalType("add");
-          }}
-          className="flex items-center bg-[#1e293b] text-white px-5 py-2.5 rounded-lg font-medium hover:bg-slate-800 transition-all active:scale-95"
+          onClick={handleOpenAdd}
+          className="flex items-center bg-[#1e293b] text-white px-5 py-2.5 rounded-lg font-medium hover:bg-slate-800 transition-all active:scale-95 shadow-md"
         >
           <Plus size={18} className="mr-2" /> Add New Character
         </button>
@@ -97,9 +134,10 @@ export default function Characters() {
 
       {/* Search */}
       <div className="relative mb-8">
-        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-          <Search size={20} className="text-gray-400" />
-        </div>
+        <Search
+          size={20}
+          className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+        />
         <input
           type="text"
           placeholder="Search characters..."
@@ -109,49 +147,70 @@ export default function Characters() {
         />
       </div>
 
-      {/* Grid using shared Card */}
+      {/* Grid with Skeleton Logic */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredCharacters.map((char) => (
-          <Card
-            key={char.id}
-            title={char.name}
-            image={char.image}
-            actions={
-              <>
-                <button
-                  onClick={() => {
-                    setSelectedCharacter(char);
-                    setModalType("edit");
-                  }}
-                  className="flex-1 flex items-center justify-center gap-2 bg-[#eef1f5] hover:bg-slate-200 text-slate-700 py-2.5 rounded-lg text-sm font-bold transition-all"
+        {isLoading
+          ? Array(6)
+              .fill(0)
+              .map((_, i) => (
+                <div
+                  key={i}
+                  className="h-95 rounded-2xl bg-gray-50 animate-pulse overflow-hidden"
                 >
-                  <Edit3 size={16} /> Edit
-                </button>
-                <button
-                  onClick={() => {
-                    setSelectedCharacter(char);
-                    setModalType("delete");
-                  }}
-                  className="w-12 flex items-center justify-center bg-[#fff1f2] hover:bg-pink-100 text-pink-500 py-2.5 rounded-lg border border-pink-100 transition-all"
-                >
-                  <Trash2 size={18} />
-                </button>
-              </>
-            }
-          >
-            {/* Unique Character Design inside the general Card */}
-            <p className="text-gray-400 text-xs font-bold mb-3 uppercase tracking-wider">
-              {char.title}
-            </p>
-            <p className="text-gray-500 text-xs leading-relaxed mb-4 grow line-clamp-3 italic">
-              "{char.famousLine}"
-            </p>
-            <p className="text-slate-600 text-xs leading-relaxed line-clamp-2 bg-slate-50 p-2 rounded-lg">
-              {char.background}
-            </p>
-          </Card>
-        ))}
+                  <div className="h-48 bg-gray-200" />
+                  <div className="p-5 space-y-4">
+                    <div className="h-5 bg-gray-200 w-3/4 rounded" />
+                    <div className="h-3 bg-gray-200 w-full rounded" />
+                    <div className="h-3 bg-gray-200 w-5/6 rounded" />
+                  </div>
+                </div>
+              ))
+          : filteredCharacters.map((char) => (
+              <Card
+                key={char.id}
+                title={char.name}
+                image={char.image}
+                actions={
+                  <>
+                    <button
+                      onClick={() => handleOpenEdit(char)}
+                      className="flex-1 flex items-center justify-center gap-2 bg-[#eef1f5] hover:bg-slate-200 text-slate-700 py-2.5 rounded-lg text-sm font-bold transition-all"
+                    >
+                      <Edit3 size={16} /> Edit
+                    </button>
+                    <button
+                      onClick={() => {
+                        setSelectedCharacter(char);
+                        setModalType("delete");
+                      }}
+                      className="w-12 flex items-center justify-center bg-[#fff1f2] hover:bg-pink-100 text-pink-500 py-2.5 rounded-lg border border-pink-100 transition-all"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </>
+                }
+              >
+                <p className="text-gray-400 text-xs font-bold mb-3 uppercase tracking-wider">
+                  {char.title}
+                </p>
+                <p className="text-gray-500 text-xs leading-relaxed mb-4 grow line-clamp-3 italic">
+                  "{char.famousLine}"
+                </p>
+                <p className="text-slate-600 text-xs leading-relaxed line-clamp-2 bg-slate-50 p-2 rounded-lg">
+                  {char.description || char.background}
+                </p>
+              </Card>
+            ))}
       </div>
+
+      {/* Pagination */}
+      {!isLoading && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={1}
+          onPageChange={setCurrentPage}
+        />
+      )}
 
       {/* Add/Edit Modal */}
       {(modalType === "add" || modalType === "edit") && (
@@ -163,9 +222,10 @@ export default function Characters() {
           footer={
             <button
               onClick={handleSave}
-              className="px-16 py-3.5 bg-slate-800 text-white rounded-2xl font-bold shadow-xl shadow-slate-200 hover:bg-slate-900 transition-all active:scale-95"
+              disabled={isCreating || isUpdating}
+              className="px-16 py-3.5 bg-slate-800 text-white rounded-2xl font-bold shadow-xl shadow-slate-200 hover:bg-slate-900 transition-all active:scale-95 disabled:opacity-50"
             >
-              Publish
+              {isCreating || isUpdating ? "Publishing..." : "Publish"}
             </button>
           }
         >
@@ -173,7 +233,7 @@ export default function Characters() {
             <InputGroup label="Name">
               <Input
                 placeholder="Write name"
-                value={selectedCharacter.name}
+                value={selectedCharacter?.name || ""}
                 onChange={(e) =>
                   setSelectedCharacter({
                     ...selectedCharacter,
@@ -185,7 +245,7 @@ export default function Characters() {
             <InputGroup label="Title">
               <Input
                 placeholder="Write title"
-                value={selectedCharacter.title}
+                value={selectedCharacter?.title || ""}
                 onChange={(e) =>
                   setSelectedCharacter({
                     ...selectedCharacter,
@@ -199,11 +259,11 @@ export default function Characters() {
           <InputGroup label="Background">
             <Textarea
               placeholder="Write character background"
-              value={selectedCharacter.background}
+              value={selectedCharacter?.description || ""}
               onChange={(e) =>
                 setSelectedCharacter({
                   ...selectedCharacter,
-                  background: e.target.value,
+                  description: e.target.value,
                 })
               }
             />
@@ -212,7 +272,7 @@ export default function Characters() {
           <InputGroup label="Character Famous Line">
             <Input
               placeholder="Enter Famous Line"
-              value={selectedCharacter.famousLine}
+              value={selectedCharacter?.famousLine || ""}
               onChange={(e) =>
                 setSelectedCharacter({
                   ...selectedCharacter,
@@ -223,12 +283,18 @@ export default function Characters() {
           </InputGroup>
 
           <InputGroup label="Photo">
-            <div className="flex items-center border-2 border-gray-100 rounded-2xl p-1 bg-white w-full md:w-2/3">
-              <button className="bg-slate-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 whitespace-nowrap">
+            <div className="relative flex items-center border-2 border-gray-100 rounded-2xl p-1 bg-white w-full md:w-2/3 overflow-hidden">
+              <input
+                type="file"
+                accept="image/*"
+                className="absolute inset-0 opacity-0 cursor-pointer"
+                onChange={(e) => setImageFile(e.target.files[0])}
+              />
+              <div className="bg-slate-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 whitespace-nowrap">
                 <ImageIcon size={14} /> Browse Image
-              </button>
+              </div>
               <div className="px-3 text-xs text-gray-400 truncate">
-                No file chosen
+                {imageFile ? imageFile.name : "No file chosen"}
               </div>
             </div>
           </InputGroup>
@@ -249,12 +315,7 @@ export default function Characters() {
             </h3>
             <div className="flex flex-col gap-3">
               <button
-                onClick={() => {
-                  setCharacters(
-                    characters.filter((c) => c.id !== selectedCharacter.id)
-                  );
-                  setModalType(null);
-                }}
+                onClick={handleConfirmDelete}
                 className="w-full py-3.5 bg-[#dc264e] hover:bg-[#c22043] text-white rounded-xl font-bold transition-all"
               >
                 Yes
@@ -269,17 +330,6 @@ export default function Characters() {
           </div>
         </Modal>
       )}
-
-      {/* Pagination (Keep your original design here) */}
-      <div className="flex justify-center items-center mt-12 gap-2 text-sm text-gray-400 font-medium">
-        <button className="w-8 h-8 rounded-full bg-slate-800 text-white flex items-center justify-center">
-          1
-        </button>
-        <button className="hover:text-slate-800">2</button>
-        <button className="flex items-center ml-2 text-slate-800 font-bold">
-          Next <ChevronRight size={16} className="ml-1" />
-        </button>
-      </div>
     </div>
   );
 }

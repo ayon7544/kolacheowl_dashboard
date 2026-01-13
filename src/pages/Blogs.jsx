@@ -13,83 +13,89 @@ import { Card } from "../components/Card";
 import { Input, InputGroup } from "../components/Form";
 import { DeleteConfirmModal } from "../components/DeleteConfirmModal";
 import { Pagination } from "../components/Pagination";
-
-const INITIAL_BLOGS = [
-  {
-    id: 1,
-    title: "The Making of a Broken World",
-    date: "December 13, 2025",
-    content:
-      "<p>A behind-the-scenes look at how the world of Nessa came to life...</p>",
-    image:
-      "https://images.unsplash.com/photo-1516979187457-637abb4f9353?q=80&w=600",
-  },
-  {
-    id: 2,
-    title: "Character Spotlight: Nessa",
-    date: "December 14, 2025",
-    content: "<p>Diving deep into the mind of our protagonist...</p>",
-    image:
-      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=600",
-  },
-];
+import { LegalSkeleton } from "../components/shimmer/LegalSkeleton";
+import {
+  useGetBlogsQuery,
+  useCreateBlogMutation,
+  useDeleteBlogMutation,
+  useUpdateBlogMutation,
+} from "../services/allApi";
 
 export default function Blogs() {
-  const [blogs, setBlogs] = useState(INITIAL_BLOGS);
+  // --- API HOOKS ---
+  const { data: blogsData, isLoading } = useGetBlogsQuery();
+  const [createBlog, { isLoading: isCreating }] = useCreateBlogMutation();
+  const [updateBlog, { isLoading: isUpdating }] = useUpdateBlogMutation();
+  const [deleteBlog] = useDeleteBlogMutation();
+
+  // --- LOCAL STATE ---
   const [searchTerm, setSearchTerm] = useState("");
   const [modalType, setModalType] = useState(null);
   const [selectedBlog, setSelectedBlog] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
 
-  // --- FILTERING & PAGINATION LOGIC ---
+  // --- FILTERING ---
   const filteredBlogs = useMemo(() => {
-    return blogs.filter((blog) =>
-      blog.title.toLowerCase().includes(searchTerm.toLowerCase())
+    const list = blogsData?.data || [];
+    return list.filter((blog) =>
+      blog.title?.toLowerCase().includes(searchTerm.toLowerCase())
     );
-  }, [blogs, searchTerm]);
+  }, [blogsData, searchTerm]);
 
   // --- HANDLERS ---
   const handleOpenAdd = () => {
-    setSelectedBlog({ title: "", content: "", image: "" });
+    setSelectedBlog({ title: "", description: "", isActive: true });
+    setImageFile(null);
     setModalType("add");
   };
 
   const handleOpenEdit = (blog) => {
-    setSelectedBlog(blog);
+    setSelectedBlog({
+      ...blog,
+      description: blog.description || blog.content, // Support both naming conventions
+    });
+    setImageFile(null);
     setModalType("edit");
   };
 
-  const handleOpenDelete = (blog) => {
-    setSelectedBlog(blog);
-    setModalType("delete");
-  };
+  const handleSave = async () => {
+    const formData = new FormData();
 
-  const handleConfirmDelete = () => {
-    setBlogs((prev) => prev.filter((b) => b.id !== selectedBlog.id));
-    setModalType(null);
-  };
+    // The specific JSON structure you requested
+    const jsonData = {
+      title: selectedBlog.title,
+      description: selectedBlog.description,
+      isActive: selectedBlog.isActive ?? true,
+    };
 
-  const handleSave = () => {
-    if (modalType === "edit") {
-      setBlogs((prev) =>
-        prev.map((b) => (b.id === selectedBlog.id ? selectedBlog : b))
-      );
-    } else {
-      const newBlog = {
-        ...selectedBlog,
-        id: Date.now(),
-        date: new Date().toLocaleDateString("en-US", {
-          month: "long",
-          day: "numeric",
-          year: "numeric",
-        }),
-        image: selectedBlog.image || INITIAL_BLOGS[0].image,
-      };
-      setBlogs((prev) => [newBlog, ...prev]);
+    formData.append("data", JSON.stringify(jsonData));
+
+    if (imageFile) {
+      formData.append("image", imageFile);
     }
-    setModalType(null);
+
+    try {
+      if (modalType === "edit") {
+        await updateBlog({ id: selectedBlog.id, data: formData }).unwrap();
+      } else {
+        await createBlog(formData).unwrap();
+      }
+      setModalType(null);
+    } catch (error) {
+      console.error("Save error:", error);
+    }
   };
 
+  const handleConfirmDelete = async () => {
+    try {
+      await deleteBlog(selectedBlog.id).unwrap();
+      setModalType(null);
+    } catch (error) {
+      console.error("Delete error:", error);
+    }
+  };
+  if (isLoading) return <LegalSkeleton />;
   return (
     <div className="min-h-screen bg-white p-6 md:p-10 font-sans text-slate-800">
       {/* Header */}
@@ -107,7 +113,6 @@ export default function Blogs() {
           <Plus size={18} className="mr-2" /> New Blog Post
         </button>
       </div>
-
       {/* Search */}
       <div className="relative mb-8">
         <Search
@@ -123,47 +128,7 @@ export default function Blogs() {
         />
       </div>
 
-      {/* Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredBlogs.map((blog) => (
-          <Card
-            key={blog.id}
-            title={blog.title}
-            image={blog.image}
-            actions={
-              <>
-                <button
-                  onClick={() => handleOpenEdit(blog)}
-                  className="flex-1 flex items-center justify-center gap-2 bg-[#eef1f5] hover:bg-slate-200 text-slate-700 py-2 rounded-lg text-xs font-bold transition-all"
-                >
-                  <Edit3 size={14} /> Edit
-                </button>
-                <button
-                  onClick={() => handleOpenDelete(blog)}
-                  className="w-10 flex items-center justify-center bg-[#fff1f2] hover:bg-pink-100 text-pink-500 py-2 rounded-lg border border-pink-100 transition-all"
-                >
-                  <Trash2 size={16} />
-                </button>
-              </>
-            }
-          >
-            <p className="text-[10px] text-gray-400 font-bold mb-1 flex items-center gap-1 uppercase tracking-wider">
-              <Calendar size={10} /> {blog.date}
-            </p>
-            <div
-              className="text-gray-500 text-[11px] leading-relaxed line-clamp-2 mt-2 prose-preview"
-              dangerouslySetInnerHTML={{ __html: blog.content }}
-            />
-          </Card>
-        ))}
-      </div>
-
       {/* Pagination */}
-      <Pagination
-        currentPage={currentPage}
-        totalPages={5}
-        onPageChange={(page) => setCurrentPage(page)}
-      />
 
       {/* Form Modal */}
       {(modalType === "add" || modalType === "edit") && (
@@ -174,9 +139,10 @@ export default function Blogs() {
           footer={
             <button
               onClick={handleSave}
-              className="px-16 py-3.5 bg-slate-800 text-white rounded-2xl font-bold shadow-xl shadow-slate-200 hover:bg-slate-900 transition-all active:scale-95"
+              disabled={isCreating || isUpdating}
+              className="px-16 py-3.5 bg-slate-800 text-white rounded-2xl font-bold shadow-xl shadow-slate-200 hover:bg-slate-900 transition-all active:scale-95 disabled:opacity-50"
             >
-              Confirm
+              {isCreating || isUpdating ? "Processing..." : "Confirm"}
             </button>
           }
         >
@@ -191,28 +157,33 @@ export default function Blogs() {
               />
             </InputGroup>
             <InputGroup label="Cover Image">
-              <div className="flex items-center border-2 border-gray-100 rounded-2xl p-1 bg-white">
-                <button className="bg-slate-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 whitespace-nowrap">
+              <div className="relative flex items-center border-2 border-gray-100 rounded-2xl p-1 bg-white overflow-hidden">
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="absolute inset-0 opacity-0 cursor-pointer"
+                  onChange={(e) => setImageFile(e.target.files[0])}
+                />
+                <div className="bg-slate-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 whitespace-nowrap">
                   <ImageIcon size={14} /> Browse Image
-                </button>
+                </div>
                 <div className="px-3 text-xs text-gray-400 truncate">
-                  No file chosen
+                  {imageFile ? imageFile.name : "No file chosen"}
                 </div>
               </div>
             </InputGroup>
           </div>
           <InputGroup label="Blog Content">
             <TextEditor
-              content={selectedBlog?.content || ""}
+              content={selectedBlog?.description || ""}
               onChange={(html) =>
-                setSelectedBlog({ ...selectedBlog, content: html })
+                setSelectedBlog({ ...selectedBlog, description: html })
               }
               placeholder="Start writing your masterpiece..."
             />
           </InputGroup>
         </Modal>
       )}
-
       {/* Delete Modal */}
       <DeleteConfirmModal
         isOpen={modalType === "delete"}

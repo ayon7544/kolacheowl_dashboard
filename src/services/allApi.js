@@ -4,7 +4,7 @@ import { getCookie } from "./cookies";
 const allApi = createApi({
   reducerPath: "allApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: "http://10.10.20.2:5006/api/v1",
+    baseUrl: "https://nessa-kolacheowl-backend.vercel.app/api/v1",
     prepareHeaders: (headers) => {
       const token = getCookie("NessasBrokenWorldAuthToken");
       if (token) {
@@ -168,6 +168,78 @@ const allApi = createApi({
         method: "DELETE",
       }),
     }),
+    // --- BLOG MANAGEMENT ---
+    getBlogs: builder.query({
+      query: ({ page = 1, limit = 10, searchTerm = "" } = {}) =>
+        `/blog/?page=${page}&limit=${limit}&searchTerm=${searchTerm}`,
+      transformResponse: (response) => ({
+        result: response.data.result,
+        meta: response.data.meta,
+      }),
+    }),
+
+    getSingleBlog: builder.query({
+      query: (blogId) => `/blog/single/${blogId}`,
+      transformResponse: (response) => response.data,
+    }),
+    createBlog: builder.mutation({
+      query: (formData) => ({
+        url: "/blog/create",
+        method: "POST",
+        body: formData,
+      }),
+    }),
+
+    updateBlog: builder.mutation({
+      query: ({ blogId, formData }) => ({
+        url: `/blog/update/${blogId}`,
+        method: "PUT",
+        body: formData,
+      }),
+    }),
+
+    deleteBlog: builder.mutation({
+      query: (blogId) => ({
+        url: `/blog/delete/${blogId}`,
+        method: "DELETE",
+      }),
+    }),
+    // --- CHARACTER MANAGEMENT ---
+    getCharacters: builder.query({
+      query: ({ page = 1, limit = 10, searchTerm = "" } = {}) =>
+        `/character/?page=${page}&limit=${limit}&searchTerm=${searchTerm}`,
+      transformResponse: (response) => ({
+        result: response.data.result,
+        meta: response.data.meta,
+      }),
+    }),
+
+    getSingleCharacter: builder.query({
+      query: (characterId) => `/character/single/${characterId}`,
+      transformResponse: (response) => response.data,
+    }),
+    createCharacter: builder.mutation({
+      query: (formData) => ({
+        url: "/character/create",
+        method: "POST",
+        body: formData,
+      }),
+    }),
+
+    updateCharacter: builder.mutation({
+      query: ({ characterId, formData }) => ({
+        url: `/character/update/${characterId}`,
+        method: "PUT",
+        body: formData,
+      }),
+    }),
+
+    deleteCharacter: builder.mutation({
+      query: (characterId) => ({
+        url: `/character/delete/${characterId}`,
+        method: "DELETE",
+      }),
+    }),
   }),
 });
 
@@ -196,6 +268,16 @@ export const {
   useGetBooksQuery,
   useGetSingleBookQuery,
   useUpdateBookMutation,
+  useGetBlogsQuery,
+  useGetSingleBlogQuery,
+  useCreateBlogMutation,
+  useDeleteBlogMutation,
+  useUpdateBlogMutation,
+  useCreateCharacterMutation,
+  useGetCharactersQuery,
+  useDeleteCharacterMutation,
+  useGetSingleCharacterQuery,
+  useUpdateCharacterMutation,
 } = allApi;
 
 export default allApi;

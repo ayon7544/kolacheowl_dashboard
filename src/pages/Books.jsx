@@ -319,7 +319,7 @@ export default function BooksManagement() {
             <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3">
               Cover Preview
             </p>
-            <div className="w-full h-72 bg-slate-50 rounded-[2rem] border-2 border-dashed border-slate-200 flex items-center justify-center overflow-hidden group">
+            <div className="w-full h-72 bg-slate-50 rounded-4xl border-2 border-dashed border-slate-200 flex items-center justify-center overflow-hidden group">
               {imagePreview ? (
                 <img
                   src={imagePreview}
