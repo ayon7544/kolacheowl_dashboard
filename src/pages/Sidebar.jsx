@@ -37,234 +37,154 @@ const Sidebar = () => {
     }
   };
 
+  /**
+   * Reusable Component for Sidebar Links
+   * Handles the "Active" logic (White bg / Black text)
+   * and "Hover" logic (Neutral-800 bg / White text)
+   */
+  const SidebarItem = ({ to, icon: Icon, label }) => (
+    <li>
+      <NavLink
+        to={to}
+        className={({ isActive }) =>
+          `w-full px-4 py-3 rounded-2xl flex items-center group transition-all duration-200 ${
+            isActive ? "bg-white text-black" : "text-white hover:bg-neutral-800"
+          }`
+        }
+      >
+        {({ isActive }) => (
+          <>
+            <Icon
+              className={`mr-3 size-5 transition-colors ${
+                isActive ? "text-black" : "group-hover:text-white"
+              }`}
+            />
+            <span
+              className={`transition-colors font-medium ${
+                isActive ? "text-black" : "text-white"
+              }`}
+            >
+              {label}
+            </span>
+          </>
+        )}
+      </NavLink>
+    </li>
+  );
+
   return (
     <div
       className={`flex ${
-        sidebarVisible ? "w-64" : "w-0 bg-white"
-      } bg-[#0C0E0F] text-white flex-col p-5 transition-all duration-300 min-h-screen`}
+        sidebarVisible ? "w-64" : "w-0 overflow-hidden"
+      } bg-[#0C0E0F] text-white flex-col p-5 transition-all duration-300 min-h-screen border-r border-neutral-800`}
     >
+      {/* Header / Logo Section */}
       <div className="flex items-center justify-between mb-8 w-full relative">
         <img
           src={logo}
           alt="Logo"
-          className={`h-10 w-auto ${!sidebarVisible && "hidden"}`}
+          className={`h-10 w-auto transition-opacity duration-300 ${
+            !sidebarVisible ? "opacity-0" : "opacity-100"
+          }`}
         />
 
         <div
           className={`${
             sidebarVisible
               ? ""
-              : "m-4 absolute inset-0 flex justify-center items-center"
+              : "absolute left-0 top-0 flex justify-center items-center"
           }`}
         >
           <button
             onClick={toggleSidebar}
             className={`${
-              sidebarVisible ? "h-full" : "h-12 w-12 bg-black rounded-2xl p-2"
-            } text-white focus:outline-none`}
+              sidebarVisible ? "h-full" : "h-12 w-12 bg-neutral-800 rounded-2xl"
+            } text-white flex items-center justify-center focus:outline-none hover:bg-neutral-700 transition-colors`}
           >
-            <FaBars className="w-6 h-6" />
+            <FaBars className="w-5 h-5" />
           </button>
         </div>
       </div>
 
       {sidebarVisible && (
         <>
-          <nav>
-            <ul className="space-y-1">
-              {/* Dashboard Link */}
-              <li>
-                <NavLink
-                  to="/dashboard"
-                  className={({ isActive }) =>
-                    `py-2 rounded flex items-center group transition-colors ${
-                      isActive
-                        ? "bg-white text-neutral-900"
-                        : "hover:bg-neutral-800"
-                    }`
-                  }
-                >
-                  <LuLayoutDashboard className="mr-3 group-hover:text-black" />
-                  <span className="text-dashboard group-hover:text-black">
-                    Dashboard
-                  </span>
-                </NavLink>
-              </li>
+          <nav className="flex-1">
+            <ul className="space-y-2">
+              {/* Main Navigation */}
+              <SidebarItem
+                to="/dashboard"
+                icon={LuLayoutDashboard}
+                label="Dashboard"
+              />
+              <SidebarItem to="/books" icon={HiOutlineBookOpen} label="Books" />
+              <SidebarItem
+                to="/characters"
+                icon={LiaUserFriendsSolid}
+                label="Characters"
+              />
+              <SidebarItem
+                to="/blogs"
+                icon={IoDocumentTextOutline}
+                label="Blog Posts"
+              />
+              <SidebarItem
+                to="/worldandthemes"
+                icon={MdOutlineCategory}
+                label="World & Themes"
+              />
 
-              {/* Books Link */}
-              <li>
-                <NavLink
-                  to="/books"
-                  className={({ isActive }) =>
-                    `py-2 rounded flex items-center group transition-colors ${
-                      isActive
-                        ? "bg-white text-neutral-900"
-                        : "hover:bg-neutral-800"
-                    }`
-                  }
-                >
-                  <HiOutlineBookOpen className="mr-3 group-hover:text-black" />
-                  <span className="text-dashboard group-hover:text-black">
-                    Books
-                  </span>
-                </NavLink>
-              </li>
-
-              {/* Characters Link */}
-              <li>
-                <NavLink
-                  to="/characters"
-                  className={({ isActive }) =>
-                    `py-2 rounded flex items-center group transition-colors ${
-                      isActive
-                        ? "bg-white text-neutral-900"
-                        : "hover:bg-neutral-800"
-                    }`
-                  }
-                >
-                  <LiaUserFriendsSolid className="mr-3 group-hover:text-black" />
-                  <span className="text-dashboard group-hover:text-black">
-                    Characters
-                  </span>
-                </NavLink>
-              </li>
-
-              {/* Blog Posts Link */}
-              <li>
-                <NavLink
-                  to="/blogs"
-                  className={({ isActive }) =>
-                    `py-2 rounded flex items-center group transition-colors ${
-                      isActive
-                        ? "bg-white text-neutral-900"
-                        : "hover:bg-neutral-800"
-                    }`
-                  }
-                >
-                  <IoDocumentTextOutline className="mr-3 group-hover:text-black" />
-                  <span className="text-dashboard group-hover:text-black">
-                    Blog Posts
-                  </span>
-                </NavLink>
-              </li>
-
-              {/* World & Themes Link */}
-              <li>
-                <NavLink
-                  to="/worldandthemes"
-                  className={({ isActive }) =>
-                    `py-2 rounded flex items-center group transition-colors ${
-                      isActive
-                        ? "bg-white text-neutral-900"
-                        : "hover:bg-neutral-800"
-                    }`
-                  }
-                >
-                  <MdOutlineCategory className="mr-3 group-hover:text-black" />
-                  <span className="text-dashboard group-hover:text-black">
-                    World & Themes
-                  </span>
-                </NavLink>
-              </li>
-
-              {/* Settings Group */}
-              <li className="relative group/parent">
-                {" "}
-                {/* Unique group name for visibility logic */}
-                <button className="py-2 rounded flex items-center w-full group transition-colors hover:bg-neutral-800">
-                  <IoSettingsOutline className="mr-3 group-hover:text-black" />
-                  <span className="text-dashboard group-hover:text-black">
+              {/* Settings Dropdown Group */}
+              <li className="relative group/parent pt-2">
+                <button className="w-full px-4 py-3 rounded-2xl flex items-center group transition-all text-white hover:bg-neutral-800">
+                  <IoSettingsOutline className="mr-3 size-5 group-hover:text-white" />
+                  <span className="font-medium group-hover:text-white">
                     Settings
                   </span>
                   <span className="ml-auto">
-                    <FaChevronRight className="transition-all group-hover:rotate-90" />
+                    <FaChevronRight className="w-3 h-3 transition-transform duration-300 group-hover/parent:rotate-90" />
                   </span>
                 </button>
-                {/* Sub-menu: Visible only when parent <li> is hovered */}
-                <ul className="pl-6 mt-2 space-y-1 hidden group-hover/parent:block">
-                  <li>
-                    <NavLink
-                      to="/editprofile"
-                      className={({ isActive }) =>
-                        `py-2 rounded flex items-center group transition-colors ${
-                          isActive
-                            ? "bg-white text-neutral-900"
-                            : "hover:bg-neutral-800"
-                        }`
-                      }
-                    >
-                      <CgProfile className="mr-3 group-hover:text-black" />
-                      <span className="text-dashboard group-hover:text-black">
-                        Edit Profile
-                      </span>
-                    </NavLink>
-                  </li>
-                  <li>
-                    <NavLink
-                      to="/accountsettings"
-                      className={({ isActive }) =>
-                        `py-2 rounded flex items-center group transition-colors ${
-                          isActive
-                            ? "bg-white text-neutral-900"
-                            : "hover:bg-neutral-800"
-                        }`
-                      }
-                    >
-                      <CiCircleInfo className="mr-3 group-hover:text-black" />
-                      <span className="text-dashboard group-hover:text-black">
-                        About Us
-                      </span>
-                    </NavLink>
-                  </li>
-                  <li>
-                    <NavLink
-                      to="/privacysettings"
-                      className={({ isActive }) =>
-                        `py-2 rounded flex items-center group transition-colors ${
-                          isActive
-                            ? "bg-white text-neutral-900"
-                            : "hover:bg-neutral-800"
-                        }`
-                      }
-                    >
-                      <MdOutlinePrivacyTip className="mr-3 group-hover:text-black" />
-                      <span className="text-dashboard group-hover:text-black">
-                        Privacy Settings
-                      </span>
-                    </NavLink>
-                  </li>
-                  <li>
-                    <NavLink
-                      to="/termsandconditions"
-                      className={({ isActive }) =>
-                        `py-2 rounded flex items-center group transition-colors ${
-                          isActive
-                            ? "bg-white text-neutral-900"
-                            : "hover:bg-neutral-800"
-                        }`
-                      }
-                    >
-                      <FaRegNewspaper className="mr-3 group-hover:text-black" />
-                      <span className="text-dashboard group-hover:text-black">
-                        Terms & Conditions
-                      </span>
-                    </NavLink>
-                  </li>
+
+                {/* Sub-menu: Hidden by default, shows on parent hover */}
+                <ul className="pl-4 mt-2 space-y-2 hidden group-hover/parent:block border-l border-neutral-800 ml-4">
+                  <SidebarItem
+                    to="/editprofile"
+                    icon={CgProfile}
+                    label="Edit Profile"
+                  />
+                  <SidebarItem
+                    to="/accountsettings"
+                    icon={CiCircleInfo}
+                    label="About Us"
+                  />
+                  <SidebarItem
+                    to="/privacysettings"
+                    icon={MdOutlinePrivacyTip}
+                    label="Privacy Settings"
+                  />
+                  <SidebarItem
+                    to="/termsandconditions"
+                    icon={FaRegNewspaper}
+                    label="Terms & Conditions"
+                  />
                 </ul>
               </li>
             </ul>
           </nav>
 
-          <button
-            onClick={handleLogout}
-            disabled={isLoading}
-            className="mt-auto text-gray-400 hover:text-white flex items-center transition-colors disabled:opacity-50"
-          >
-            <FaSignOutAlt className="mr-3" />
-            <span className="text-dashboard">
-              {isLoading ? "Logging out..." : "Log out"}
-            </span>
-          </button>
+          {/* Footer / Logout */}
+          <div className="pt-4 border-t border-neutral-800">
+            <button
+              onClick={handleLogout}
+              disabled={isLoading}
+              className="w-full px-4 py-3 rounded-2xl text-neutral-400 hover:text-white hover:bg-neutral-800 flex items-center transition-all disabled:opacity-50"
+            >
+              <FaSignOutAlt className="mr-3 size-5" />
+              <span className="font-medium">
+                {isLoading ? "Logging out..." : "Log out"}
+              </span>
+            </button>
+          </div>
         </>
       )}
     </div>
