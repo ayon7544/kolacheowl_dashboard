@@ -4,7 +4,7 @@ import { getCookie } from "./cookies";
 const allApi = createApi({
   reducerPath: "allApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: "http://10.10.20.2:5006/api/v1",
+    baseUrl: "https://nessa-kolacheowl-backend.vercel.app/api/v1",
     prepareHeaders: (headers) => {
       const token = getCookie("NessasBrokenWorldAuthToken");
       if (token) {
@@ -337,7 +337,7 @@ export const {
   useUpdateThemeMutation,
   useGetAdminDashboardStatsQuery,
   useUpdateHeroBannerMutation,
-  useGetHeroBannerQuery
+  useGetHeroBannerQuery,
 } = allApi;
 
 export default allApi;
