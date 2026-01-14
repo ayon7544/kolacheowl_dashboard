@@ -23,7 +23,7 @@ import { DeleteConfirmModal } from "../components/DeleteConfirmModal";
 import { Pagination } from "../components/Pagination";
 import { FileUploader } from "../components/FileUploader";
 import TextEditor from "../components/TextEditor";
-import { LegalSkeleton } from "../components/shimmer/LegalSkeleton";
+import BooksSkeleton from "../components/shimmer/ContentsSkeleton";
 import {
   useGetBooksQuery,
   useCreateBookMutation,
@@ -150,7 +150,7 @@ export default function BooksManagement() {
     }
   };
 
-  if (isLoading) return <LegalSkeleton />;
+  if (isLoading) return <BooksSkeleton />;
 
   return (
     <div className="min-h-screen bg-white p-6 md:p-10 font-sans text-slate-800">
@@ -241,9 +241,10 @@ export default function BooksManagement() {
                   label="Updated"
                   value={
                     book.updatedAt
-                      ? new Date(book.updatedAt).toLocaleDateString("en-US", {
-                          month: "short",
+                      ? new Date(book.createdAt).toLocaleDateString("en-US", {
+                          month: "long",
                           day: "numeric",
+                          year: "numeric",
                         })
                       : "N/A"
                   }
@@ -269,7 +270,7 @@ export default function BooksManagement() {
                         book.isActive ? "text-emerald-700" : "text-slate-500"
                       }`}
                     >
-                      {book.isActive ? "Active" : "Inactive"}
+                      {book.isActive ? "Visible" : "Hidden"}
                     </p>
                   </div>
                 </div>

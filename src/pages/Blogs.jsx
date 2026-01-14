@@ -20,7 +20,7 @@ import { Card } from "../components/Card";
 import { Input, InputGroup } from "../components/Form";
 import { DeleteConfirmModal } from "../components/DeleteConfirmModal";
 import { Pagination } from "../components/Pagination";
-import { LegalSkeleton } from "../components/shimmer/LegalSkeleton";
+import BooksSkeleton from "../components/shimmer/ContentsSkeleton";
 import {
   useGetBlogsQuery,
   useCreateBlogMutation,
@@ -138,7 +138,7 @@ export default function Blogs() {
     }
   };
 
-  if (isLoading) return <LegalSkeleton />;
+  if (isLoading) return <BooksSkeleton />;
 
   return (
     <div className="min-h-screen bg-white p-6 md:p-10 font-sans text-slate-800">
@@ -208,20 +208,36 @@ export default function Blogs() {
                 dangerouslySetInnerHTML={{ __html: blog.description }}
               />
               <div className="flex justify-between items-center mt-auto pt-4 border-t border-slate-50">
-                <div className="flex items-center gap-2 text-xs text-slate-400 font-bold uppercase tracking-wider">
-                  <Calendar size={14} />
-                  {new Date(blog.createdAt).toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                  })}
-                </div>
-                <div
-                  className={`flex items-center gap-1 text-xs font-bold ${
-                    blog.isActive ? "text-emerald-500" : "text-slate-300"
-                  }`}
-                >
-                  {blog.isActive ? <Eye size={14} /> : <EyeOff size={14} />}
-                  {blog.isActive ? "active" : "inActive"}
+                       <div className="flex items-center gap-2 text-[10px] text-gray-400 font-bold mb-3 uppercase tracking-tighter">
+                             <Calendar size={12} />
+                             {new Date(blog.createdAt).toLocaleDateString("en-US", {
+                               month: "long",
+                               day: "numeric",
+                               year: "numeric",
+                             })}
+                           </div>
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`p-2.5 rounded-xl transition-colors ${
+                      blog.isActive
+                        ? "bg-emerald-50 text-emerald-600"
+                        : "bg-slate-100 text-slate-400"
+                    }`}
+                  >
+                    {blog.isActive ? <Eye size={18} /> : <EyeOff size={18} />}
+                  </div>
+                  <div>
+                    <p className="text-[10px] uppercase font-black tracking-widest text-slate-400 leading-none mb-1">
+                      Status
+                    </p>
+                    <p
+                      className={`text-xs font-bold ${
+                        blog.isActive ? "text-emerald-700" : "text-slate-500"
+                      }`}
+                    >
+                      {blog.isActive ? "Visible" : "Hidden"}
+                    </p>
+                  </div>
                 </div>
               </div>
             </Card>

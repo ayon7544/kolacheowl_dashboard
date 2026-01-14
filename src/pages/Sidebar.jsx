@@ -119,7 +119,7 @@ const Sidebar = () => {
               <SidebarItem
                 to="/blogs"
                 icon={IoDocumentTextOutline}
-                label="Blog Posts"
+                label="Blogs"
               />
               <SidebarItem
                 to="/worldandthemes"

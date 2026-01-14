@@ -240,6 +240,58 @@ const allApi = createApi({
         method: "DELETE",
       }),
     }),
+    // --- THEMES  MANAGEMENT ---
+    getThemes: builder.query({
+      query: ({ page = 1, limit = 10, searchTerm = "" } = {}) =>
+        `/theme/?page=${page}&limit=${limit}&searchTerm=${searchTerm}`,
+      transformResponse: (response) => ({
+        result: response.data.result,
+        meta: response.data.meta,
+      }),
+    }),
+
+    getSingleTheme: builder.query({
+      query: (themeId) => `/theme/single/${themeId}`,
+      transformResponse: (response) => response.data,
+    }),
+    createTheme: builder.mutation({
+      query: (formData) => ({
+        url: "/theme/create",
+        method: "POST",
+        body: formData,
+      }),
+    }),
+
+    updateTheme: builder.mutation({
+      query: ({ themeId, formData }) => ({
+        url: `/theme/update/${themeId}`,
+        method: "PUT",
+        body: formData,
+      }),
+    }),
+
+    deleteTheme: builder.mutation({
+      query: (themeId) => ({
+        url: `/theme/delete/${themeId}`,
+        method: "DELETE",
+      }),
+    }),
+    getAdminDashboardStats: builder.query({
+      query: ({ type, year }) =>
+        `/users/admin-dashboard?type=${type}&year=${year}`,
+      transformResponse: (response) => response.data,
+    }),
+
+    updateHeroBanner: builder.mutation({
+      query: (formData) => ({
+        url: `/hero-banner/create`,
+        method: "POST",
+        body: formData,
+      }),
+    }),
+    getHeroBanner: builder.query({
+      query: () => "/hero-banner",
+    }),
   }),
 });
 
@@ -278,6 +330,14 @@ export const {
   useDeleteCharacterMutation,
   useGetSingleCharacterQuery,
   useUpdateCharacterMutation,
+  useCreateThemeMutation,
+  useDeleteThemeMutation,
+  useGetSingleThemeQuery,
+  useGetThemesQuery,
+  useUpdateThemeMutation,
+  useGetAdminDashboardStatsQuery,
+  useUpdateHeroBannerMutation,
+  useGetHeroBannerQuery
 } = allApi;
 
 export default allApi;

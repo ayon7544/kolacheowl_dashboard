@@ -9,6 +9,7 @@ import {
   Eye,
   EyeOff,
   X,
+  Calendar
 } from "lucide-react";
 import { toast } from "react-toastify";
 
@@ -19,7 +20,7 @@ import { Card } from "../components/Card";
 import { Input, InputGroup } from "../components/Form";
 import { DeleteConfirmModal } from "../components/DeleteConfirmModal";
 import { Pagination } from "../components/Pagination";
-import { LegalSkeleton } from "../components/shimmer/LegalSkeleton";
+import BooksSkeleton from "../components/shimmer/ContentsSkeleton";
 
 // API Hooks
 import {
@@ -141,7 +142,7 @@ export default function Characters() {
     }
   };
 
-  if (isLoading) return <LegalSkeleton />;
+  if (isLoading) return <BooksSkeleton />;
 
   return (
     <div className="min-h-screen bg-white p-6 md:p-10 font-sans text-slate-800">
@@ -207,6 +208,14 @@ export default function Characters() {
                 </>
               }
             >
+                        <div className="flex items-center gap-2 text-[10px] text-gray-400 font-bold mb-3 uppercase tracking-tighter">
+                <Calendar size={12} />
+                {new Date(char.createdAt).toLocaleDateString("en-US", {
+                  month: "long",
+                  day: "numeric",
+                  year: "numeric",
+                })}
+              </div>
               <div className="mb-3">
                 <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest">
                   {char.title}
@@ -219,14 +228,27 @@ export default function Characters() {
                 className="text-slate-600 text-xs line-clamp-3 bg-slate-50 p-3 rounded-xl border border-slate-100"
                 dangerouslySetInnerHTML={{ __html: char.description }}
               />
-              <div className="flex justify-end items-center mt-4">
+              <div className="flex items-center gap-3 my-2">
                 <div
-                  className={`flex items-center gap-1 text-[10px] font-bold uppercase tracking-tighter ${
-                    char.isActive ? "text-emerald-500" : "text-slate-300"
+                  className={`p-2.5 rounded-xl transition-colors ${
+                    char.isActive
+                      ? "bg-emerald-50 text-emerald-600"
+                      : "bg-slate-100 text-slate-400"
                   }`}
                 >
-                  {char.isActive ? <Eye size={12} /> : <EyeOff size={12} />}
-                  {char.isActive ? "Active" : "Inactive"}
+                  {char.isActive ? <Eye size={18} /> : <EyeOff size={18} />}
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase font-black tracking-widest text-slate-400 leading-none mb-1">
+                    Status
+                  </p>
+                  <p
+                    className={`text-xs font-bold ${
+                      char.isActive ? "text-emerald-700" : "text-slate-500"
+                    }`}
+                  >
+                    {char.isActive ? "Visible" : "Hidden"}
+                  </p>
                 </div>
               </div>
             </Card>
@@ -405,7 +427,7 @@ export default function Characters() {
                         : "text-slate-400 hover:text-slate-600"
                     }`}
                   >
-                    {val ? "Active" : "Inactive"}
+                    {val ? "Active" : "InActive"}
                   </button>
                 ))}
               </div>
