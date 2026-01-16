@@ -9,10 +9,9 @@ import {
   Eye,
   EyeOff,
   X,
-  Calendar,
+  Calendar
 } from "lucide-react";
 import { toast } from "react-toastify";
-import { Tag } from "lucide-react";
 
 // Reusable Component Imports
 import TextEditor from "../components/TextEditor";
@@ -48,7 +47,7 @@ export default function Characters() {
     page: currentPage,
     limit: 10,
   });
-
+  console.log(charactersData);
   const [createCharacter, { isLoading: isCreating }] =
     useCreateCharacterMutation();
   const [updateCharacter, { isLoading: isUpdating }] =
@@ -87,7 +86,6 @@ export default function Characters() {
       description: "",
       famousLine: "",
       isActive: true,
-      isAvailable: true,
       photo: null,
     });
     setImageFile(null);
@@ -108,7 +106,6 @@ export default function Characters() {
       description: selectedCharacter.description,
       famousLine: selectedCharacter.famousLine,
       isActive: selectedCharacter.isActive ?? true,
-      isAvailable: selectedCharacter.isAvailable,
     };
 
     formData.append("data", JSON.stringify(jsonData));
@@ -191,7 +188,6 @@ export default function Characters() {
               title={char.name}
               image={char.photo || ""} // Card component will display this image
               active={char.isActive}
-              availabe={char.isAvailable}
               actions={
                 <>
                   <button
@@ -212,7 +208,7 @@ export default function Characters() {
                 </>
               }
             >
-              <div className="flex items-center gap-2 text-[10px] text-gray-400 font-bold mb-3 uppercase tracking-tighter">
+                        <div className="flex items-center gap-2 text-[10px] text-gray-400 font-bold mb-3 uppercase tracking-tighter">
                 <Calendar size={12} />
                 {new Date(char.createdAt).toLocaleDateString("en-US", {
                   month: "long",
@@ -232,57 +228,27 @@ export default function Characters() {
                 className="text-slate-600 text-xs line-clamp-3 bg-slate-50 p-3 rounded-xl border border-slate-100"
                 dangerouslySetInnerHTML={{ __html: char.description }}
               />
-              <div className="flex items-center justify-between w-full py-2 px-2">
-                {/* LEFT: Status */}
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`p-2.5 rounded-xl transition-colors ${
-                      char.isActive
-                        ? "bg-emerald-50 text-emerald-600"
-                        : "bg-slate-100 text-slate-400"
-                    }`}
-                  >
-                    {char.isActive ? <Eye size={18} /> : <EyeOff size={18} />}
-                  </div>
-                  <div>
-                    <p className="text-[10px] uppercase font-black tracking-widest text-slate-400 leading-none mb-1">
-                      Status
-                    </p>
-                    <p
-                      className={`text-xs font-bold ${
-                        char.isActive ? "text-emerald-700" : "text-slate-500"
-                      }`}
-                    >
-                      {char.isActive ? "Visible" : "Hidden"}
-                    </p>
-                  </div>
+              <div className="flex items-center gap-3 my-2">
+                <div
+                  className={`p-2.5 rounded-xl transition-colors ${
+                    char.isActive
+                      ? "bg-emerald-50 text-emerald-600"
+                      : "bg-slate-100 text-slate-400"
+                  }`}
+                >
+                  {char.isActive ? <Eye size={18} /> : <EyeOff size={18} />}
                 </div>
-
-                {/* RIGHT: Availability */}
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`p-2.5 rounded-xl transition-colors ${
-                      char.isAvailable
-                        ? "bg-blue-50 text-blue-600"
-                        : "bg-amber-50 text-amber-600"
+                <div>
+                  <p className="text-[10px] uppercase font-black tracking-widest text-slate-400 leading-none mb-1">
+                    Status
+                  </p>
+                  <p
+                    className={`text-xs font-bold ${
+                      char.isActive ? "text-emerald-700" : "text-slate-500"
                     }`}
                   >
-                    <Tag size={18} />
-                  </div>
-                  <div className="text-right">
-                    {" "}
-                    {/* Added text-right for better alignment */}
-                    <p className="text-[10px] uppercase font-black tracking-widest text-slate-400 leading-none mb-1">
-                      Availability
-                    </p>
-                    <p
-                      className={`text-xs font-bold ${
-                        char.isAvailable ? "text-blue-700" : "text-amber-700"
-                      }`}
-                    >
-                      {char.isAvailable ? "Available" : "Out of Stock"}
-                    </p>
-                  </div>
+                    {char.isActive ? "Visible" : "Hidden"}
+                  </p>
                 </div>
               </div>
             </Card>
@@ -462,29 +428,6 @@ export default function Characters() {
                     }`}
                   >
                     {val ? "Active" : "InActive"}
-                  </button>
-                ))}
-              </div>
-            </InputGroup>
-            <InputGroup label="Availability">
-              <div className="flex gap-4 p-1 bg-slate-50 rounded-2xl">
-                {[true, false].map((val) => (
-                  <button
-                    key={val.toString()}
-                    type="button"
-                    onClick={() =>
-                      setSelectedCharacter({
-                        ...selectedCharacter,
-                        isAvailable: val,
-                      })
-                    }
-                    className={`flex-1 py-3 px-4 rounded-xl text-xs font-bold transition-all ${
-                      selectedCharacter?.isAvailable === val
-                        ? "bg-white text-slate-900 shadow-sm"
-                        : "text-slate-400 hover:text-slate-600"
-                    }`}
-                  >
-                    {val ? "In Stock" : "Out of Stock"}
                   </button>
                 ))}
               </div>
