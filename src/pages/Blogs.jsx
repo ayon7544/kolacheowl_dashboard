@@ -10,6 +10,7 @@ import {
   Eye,
   EyeOff,
   X,
+  Tag,
 } from "lucide-react";
 import { toast } from "react-toastify";
 
@@ -76,7 +77,13 @@ export default function Blogs() {
 
   // --- HANDLERS ---
   const handleOpenAdd = () => {
-    setSelectedBlog({ title: "", description: "", isActive: true, images: [] });
+    setSelectedBlog({
+      title: "",
+      description: "",
+      isActive: true,
+      isAvailable: true,
+      images: [],
+    });
     setImageFiles([]);
     setModalType("add");
   };
@@ -98,6 +105,7 @@ export default function Blogs() {
       title: selectedBlog.title,
       description: selectedBlog.description,
       isActive: selectedBlog.isActive ?? true,
+      isAvailable: selectedBlog.isAvailable,
     };
 
     formData.append("data", JSON.stringify(jsonData));
@@ -182,6 +190,7 @@ export default function Blogs() {
               title={blog.title}
               image={blog.images?.[0] || ""}
               active={blog.isActive}
+              availabe={blog.isAvailable}
               latestUpdate={new Date(blog.updatedAt).toLocaleDateString()}
               actions={
                 <>
@@ -208,14 +217,14 @@ export default function Blogs() {
                 dangerouslySetInnerHTML={{ __html: blog.description }}
               />
               <div className="flex justify-between items-center mt-auto pt-4 border-t border-slate-50">
-                       <div className="flex items-center gap-2 text-[10px] text-gray-400 font-bold mb-3 uppercase tracking-tighter">
-                             <Calendar size={12} />
-                             {new Date(blog.createdAt).toLocaleDateString("en-US", {
-                               month: "long",
-                               day: "numeric",
-                               year: "numeric",
-                             })}
-                           </div>
+                <div className="flex items-center gap-2 text-[10px] text-gray-400 font-bold mb-3 uppercase tracking-tighter">
+                  <Calendar size={12} />
+                  {new Date(blog.createdAt).toLocaleDateString("en-US", {
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
+                </div>
                 <div className="flex items-center gap-3">
                   <div
                     className={`p-2.5 rounded-xl transition-colors ${
@@ -236,6 +245,29 @@ export default function Blogs() {
                       }`}
                     >
                       {blog.isActive ? "Visible" : "Hidden"}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`p-2.5 rounded-xl transition-colors ${
+                      blog.isAvailable
+                        ? "bg-blue-50 text-blue-600"
+                        : "bg-amber-50 text-amber-600"
+                    }`}
+                  >
+                    <Tag size={18} />
+                  </div>
+                  <div>
+                    <p className="text-[10px] uppercase font-black tracking-widest text-slate-400 leading-none mb-1">
+                      Availability
+                    </p>
+                    <p
+                      className={`text-xs font-bold ${
+                        blog.isAvailable ? "text-blue-700" : "text-amber-700"
+                      }`}
+                    >
+                      {blog.isAvailable ? "Available" : "Out of Stock"}
                     </p>
                   </div>
                 </div>
@@ -366,7 +398,7 @@ export default function Blogs() {
             </div>
           )}
 
-          <div className="grid grid-cols-1 gap-6 mb-8">
+          <div className=" mb-8 flex">
             <InputGroup label="Visibility Status">
               <div className="flex gap-4 p-1 bg-slate-50 rounded-2xl max-w-xs">
                 {[true, false].map((val) => (
@@ -383,6 +415,29 @@ export default function Blogs() {
                     }`}
                   >
                     {val ? "Active" : "Inactive"}
+                  </button>
+                ))}
+              </div>
+            </InputGroup>
+            <InputGroup label="Availability">
+              <div className="flex gap-4 p-1 bg-slate-50 rounded-2xl">
+                {[true, false].map((val) => (
+                  <button
+                    key={val.toString()}
+                    type="button"
+                    onClick={() =>
+                      setSelectedBlog({
+                        ...selectedBlog,
+                        isAvailable: val,
+                      })
+                    }
+                    className={`flex-1 py-3 px-4 rounded-xl text-xs font-bold transition-all ${
+                      selectedBlog?.isAvailable === val
+                        ? "bg-white text-slate-900 shadow-sm"
+                        : "text-slate-400 hover:text-slate-600"
+                    }`}
+                  >
+                    {val ? "In Stock" : "Out of Stock"}
                   </button>
                 ))}
               </div>

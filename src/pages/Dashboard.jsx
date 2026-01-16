@@ -82,8 +82,7 @@ const DashboardPage = () => {
       await updateHeroBanner(formData).unwrap();
       toast.success("Hero banner updated!");
     } catch (err) {
-      console.error("Failed to update:", err);
-      alert("Failed to update hero banner.");
+      toast.error(err?.data?.message || "Operation failed.");
     }
   };
   // --- API INTEGRATION ENDS HERE ---

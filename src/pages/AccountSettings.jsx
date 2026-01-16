@@ -45,7 +45,6 @@ export default function AboutUsManagement() {
       setTimeout(() => setShowSuccess(false), 3000);
       toast.success("About Us updated successfully");
     } catch (err) {
-      console.error(err);
       toast.error(err?.data?.message || "Failed to save changes");
     }
   };

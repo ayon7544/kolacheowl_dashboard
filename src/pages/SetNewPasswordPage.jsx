@@ -55,7 +55,7 @@ const SetNewPasswordPage = () => {
         navigate("/login");
       }, 2000);
     } catch (err) {
-      console.log(err)
+
       toast.error(err?.data?.message || "Failed to update password.");
     }
   };

@@ -76,7 +76,8 @@ export default function BooksManagement() {
       writerName: "",
       description: "",
       featuredRelease: false,
-      isActive: true, // DEFAULT VALUE ADDED
+      isActive: true,
+      isAvailable: true, // ADDED DEFAULT VALUE
       aboutBook: "",
       imageFile: null,
       pdfFile: null,
@@ -112,7 +113,8 @@ export default function BooksManagement() {
       description: selectedBook.description,
       aboutBook: selectedBook.aboutBook,
       featuredRelease: selectedBook.featuredRelease,
-      isActive: selectedBook.isActive, // DATA CAPTURED HERE
+      isActive: selectedBook.isActive,
+      isAvailable: selectedBook.isAvailable,
     };
 
     formData.append("data", JSON.stringify(payload));
@@ -126,7 +128,11 @@ export default function BooksManagement() {
 
     try {
       if (modalType === "edit") {
-        await updateBook({ bookId: selectedBook.id, formData }).unwrap();
+        const res = await updateBook({
+          bookId: selectedBook.id,
+          formData,
+        }).unwrap();
+
         toast.success("Book updated successfully");
       } else {
         await createBook(formData).unwrap();
@@ -198,6 +204,7 @@ export default function BooksManagement() {
               title={book.title}
               image={book.thumbnail}
               active={book.isActive}
+              availabe={book.isAvailable}
               latestUpdate={
                 book.updatedAt
                   ? new Date(book.updatedAt).toLocaleDateString("en-US", {
@@ -231,47 +238,77 @@ export default function BooksManagement() {
                 "{book.description}"
               </p>
 
-              <div className="flex flex-wrap items-center gap-6 mb-2">
-                {/* 1. WRITER INFO */}
-                <MetaItem icon={Tag} label="Writer" value={book.writerName} />
+              {/* Main Container: Stacked Rows */}
+              <div className="flex flex-col gap-5 mb-2">
+                {/* ROW 1: Writer (Left) | Updated (Right) */}
+                <div className="grid grid-cols-2 gap-4">
+                  <MetaItem icon={Tag} label="Writer" value={book.writerName} />
 
-                {/* 2. LATEST UPDATE INFO */}
-                <MetaItem
-                  icon={Calendar}
-                  label="Updated"
-                  value={
-                    book.updatedAt
-                      ? new Date(book.createdAt).toLocaleDateString("en-US", {
-                          month: "long",
-                          day: "numeric",
-                          year: "numeric",
-                        })
-                      : "N/A"
-                  }
-                />
+                  <MetaItem
+                    icon={Calendar}
+                    label="Updated"
+                    value={
+                      book.updatedAt
+                        ? new Date(book.updatedAt).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })
+                        : "N/A"
+                    }
+                  />
+                </div>
 
-                {/* 3. VISIBILITY STATUS */}
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`p-2.5 rounded-xl transition-colors ${
-                      book.isActive
-                        ? "bg-emerald-50 text-emerald-600"
-                        : "bg-slate-100 text-slate-400"
-                    }`}
-                  >
-                    {book.isActive ? <Eye size={18} /> : <EyeOff size={18} />}
-                  </div>
-                  <div>
-                    <p className="text-[10px] uppercase font-black tracking-widest text-slate-400 leading-none mb-1">
-                      Status
-                    </p>
-                    <p
-                      className={`text-xs font-bold ${
-                        book.isActive ? "text-emerald-700" : "text-slate-500"
+                {/* ROW 2: Status (Left) | Availability (Right) */}
+                <div className="grid grid-cols-2 gap-4">
+                  {/* 1. VISIBILITY STATUS (LEFT) */}
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`p-2.5 rounded-xl transition-colors ${
+                        book.isActive
+                          ? "bg-emerald-50 text-emerald-600"
+                          : "bg-slate-100 text-slate-400"
                       }`}
                     >
-                      {book.isActive ? "Visible" : "Hidden"}
-                    </p>
+                      {book.isActive ? <Eye size={18} /> : <EyeOff size={18} />}
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase font-black tracking-widest text-slate-400 leading-none mb-1">
+                        Status
+                      </p>
+                      <p
+                        className={`text-xs font-bold ${
+                          book.isActive ? "text-emerald-700" : "text-slate-500"
+                        }`}
+                      >
+                        {book.isActive ? "Visible" : "Hidden"}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* 2. AVAILABILITY (RIGHT) */}
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`p-2.5 rounded-xl transition-colors ${
+                        book.isAvailable
+                          ? "bg-blue-50 text-blue-600"
+                          : "bg-amber-50 text-amber-600"
+                      }`}
+                    >
+                      <Tag size={18} />
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase font-black tracking-widest text-slate-400 leading-none mb-1">
+                        Availability
+                      </p>
+                      <p
+                        className={`text-xs font-bold ${
+                          book.isAvailable ? "text-blue-700" : "text-amber-700"
+                        }`}
+                      >
+                        {book.isAvailable ? "Available" : "Out of Stock"}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -417,6 +454,26 @@ export default function BooksManagement() {
                     }`}
                   >
                     {val ? "Active" : "Inactive"}
+                  </button>
+                ))}
+              </div>
+            </InputGroup>
+            <InputGroup label="Availability">
+              <div className="flex gap-4 p-1 bg-slate-50 rounded-2xl">
+                {[true, false].map((val) => (
+                  <button
+                    key={val.toString()}
+                    type="button"
+                    onClick={() =>
+                      setSelectedBook({ ...selectedBook, isAvailable: val })
+                    }
+                    className={`flex-1 py-3 px-4 rounded-xl text-xs font-bold transition-all ${
+                      selectedBook?.isAvailable === val
+                        ? "bg-white text-slate-900 shadow-sm"
+                        : "text-slate-400 hover:text-slate-600"
+                    }`}
+                  >
+                    {val ? "In Stock" : "Out of Stock"}
                   </button>
                 ))}
               </div>

@@ -48,7 +48,6 @@ export default function TermsConditionsManagement() {
       // Hide success banner after 3 seconds
       setTimeout(() => setShowSuccess(false), 3000);
     } catch (err) {
-      console.error("Save Error:", err);
       toast.error(err?.data?.message || "Failed to save changes");
     }
   };

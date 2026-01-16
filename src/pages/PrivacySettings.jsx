@@ -46,7 +46,6 @@ export default function PrivacyPolicyManagement() {
       setTimeout(() => setShowSuccess(false), 3000);
       toast.success("Privacy Policy saved successfully");
     } catch (err) {
-      console.error("Save Error:", err);
       toast.error(err?.data?.message || "Failed to save privacy policy");
     }
   };

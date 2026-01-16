@@ -10,6 +10,7 @@ import {
   EyeOff,
   X,
   Calendar,
+  Tag,
 } from "lucide-react";
 import { toast } from "react-toastify";
 
@@ -80,6 +81,7 @@ export default function WorldThemes() {
       title: "",
       description: "",
       isActive: true,
+      isAvailable: true,
       image: null,
     });
     setImageFile(null);
@@ -99,6 +101,7 @@ export default function WorldThemes() {
       title: selectedTheme.title,
       description: selectedTheme.description,
       isActive: selectedTheme.isActive ?? true,
+      isAvailable: selectedTheme.isAvailable,
     };
 
     formData.append("data", JSON.stringify(jsonData));
@@ -181,6 +184,7 @@ export default function WorldThemes() {
               title={theme.title}
               image={theme.image || ""}
               active={theme.isActive}
+              availabe={theme.isAvailable}
               actions={
                 <>
                   <button
@@ -213,27 +217,57 @@ export default function WorldThemes() {
                 className="text-slate-600 text-xs line-clamp-3 bg-slate-50 p-3 rounded-xl border border-slate-100"
                 dangerouslySetInnerHTML={{ __html: theme.description }}
               />
-              <div className="flex items-center gap-3 my-2">
-                <div
-                  className={`p-2.5 rounded-xl transition-colors ${
-                    theme.isActive
-                      ? "bg-emerald-50 text-emerald-600"
-                      : "bg-slate-100 text-slate-400"
-                  }`}
-                >
-                  {theme.isActive ? <Eye size={18} /> : <EyeOff size={18} />}
-                </div>
-                <div>
-                  <p className="text-[10px] uppercase font-black tracking-widest text-slate-400 leading-none mb-1">
-                    Status
-                  </p>
-                  <p
-                    className={`text-xs font-bold ${
-                      theme.isActive ? "text-emerald-700" : "text-slate-500"
+              <div className="flex items-center justify-between w-full py-2 px-2">
+                {/* LEFT: Status */}
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`p-2.5 rounded-xl transition-colors ${
+                      theme.isActive
+                        ? "bg-emerald-50 text-emerald-600"
+                        : "bg-slate-100 text-slate-400"
                     }`}
                   >
-                    {theme.isActive ? "Visible" : "Hidden"}
-                  </p>
+                    {theme.isActive ? <Eye size={18} /> : <EyeOff size={18} />}
+                  </div>
+                  <div>
+                    <p className="text-[10px] uppercase font-black tracking-widest text-slate-400 leading-none mb-1">
+                      Status
+                    </p>
+                    <p
+                      className={`text-xs font-bold ${
+                        theme.isActive ? "text-emerald-700" : "text-slate-500"
+                      }`}
+                    >
+                      {theme.isActive ? "Visible" : "Hidden"}
+                    </p>
+                  </div>
+                </div>
+
+                {/* RIGHT: Availability */}
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`p-2.5 rounded-xl transition-colors ${
+                      theme.isAvailable
+                        ? "bg-blue-50 text-blue-600"
+                        : "bg-amber-50 text-amber-600"
+                    }`}
+                  >
+                    <Tag size={18} />
+                  </div>
+                  <div className="text-right">
+                    {" "}
+                    {/* Added text-right for better alignment */}
+                    <p className="text-[10px] uppercase font-black tracking-widest text-slate-400 leading-none mb-1">
+                      Availability
+                    </p>
+                    <p
+                      className={`text-xs font-bold ${
+                        theme.isAvailable ? "text-blue-700" : "text-amber-700"
+                      }`}
+                    >
+                      {theme.isAvailable ? "Available" : "Out of Stock"}
+                    </p>
+                  </div>
                 </div>
               </div>
             </Card>
@@ -356,7 +390,7 @@ export default function WorldThemes() {
             </div>
           </div>
 
-          <div className="mb-8">
+          <div className="mb-8 flex">
             <InputGroup label="Visibility Status">
               <div className="flex gap-4 p-1 bg-slate-50 rounded-2xl w-fit">
                 {[true, false].map((val) => (
@@ -373,6 +407,29 @@ export default function WorldThemes() {
                     }`}
                   >
                     {val ? "Active" : "Inactive"}
+                  </button>
+                ))}
+              </div>
+            </InputGroup>
+            <InputGroup label="Availability">
+              <div className="flex gap-4 p-1 bg-slate-50 rounded-2xl">
+                {[true, false].map((val) => (
+                  <button
+                    key={val.toString()}
+                    type="button"
+                    onClick={() =>
+                      setSelectedTheme({
+                        ...selectedTheme,
+                        isAvailable: val,
+                      })
+                    }
+                    className={`flex-1 py-3 px-4 rounded-xl text-xs font-bold transition-all ${
+                      selectedTheme?.isAvailable === val
+                        ? "bg-white text-slate-900 shadow-sm"
+                        : "text-slate-400 hover:text-slate-600"
+                    }`}
+                  >
+                    {val ? "In Stock" : "Out of Stock"}
                   </button>
                 ))}
               </div>
