@@ -20,8 +20,11 @@ import EditProfile from "./pages/EditProfile";
 import PrivacySettings from "./pages/PrivacySettings";
 import TermsAndConditions from "./pages/TermsAndConditions";
 import { getCookie } from "./services/cookies";
+import ProtectedRoute from "./components/ProtectedRoute"; // Import the ProtectedRoute component
+
 function App() {
   const token = getCookie("NessasBrokenWorldAuthToken");
+
   return (
     <Router>
       <Routes>
@@ -32,83 +35,101 @@ function App() {
           }
         />
 
-        {/* Routes without Sidebar */}
+        {/* Routes without Sidebar (Unprotected Routes) */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/forgetPassword" element={<ForgotPasswordPage />} />
         <Route path="/verifyCode" element={<VerifyCodePage />} />
         <Route path="/setNewPassword" element={<SetNewPasswordPage />} />
 
-        {/* Routes with Sidebar (using Layout) */}
+        {/* Routes with Sidebar (Protected Routes) */}
         <Route
           path="/dashboard"
           element={
-            <Layout>
-              <DashboardPage />
-            </Layout>
+            <ProtectedRoute>
+              <Layout>
+                <DashboardPage />
+              </Layout>
+            </ProtectedRoute>
           }
         />
         <Route
           path="/books"
           element={
-            <Layout>
-              <Books />
-            </Layout>
+            <ProtectedRoute>
+              <Layout>
+                <Books />
+              </Layout>
+            </ProtectedRoute>
           }
         />
         <Route
           path="/characters"
           element={
-            <Layout>
-              <Characters />
-            </Layout>
+            <ProtectedRoute>
+              <Layout>
+                <Characters />
+              </Layout>
+            </ProtectedRoute>
           }
         />
         <Route
           path="/blogs"
           element={
-            <Layout>
-              <Blogs />
-            </Layout>
+            <ProtectedRoute>
+              <Layout>
+                <Blogs />
+              </Layout>
+            </ProtectedRoute>
           }
         />
         <Route
           path="/worldandthemes"
           element={
-            <Layout>
-              <WorldAndThemes />
-            </Layout>
+            <ProtectedRoute>
+              <Layout>
+                <WorldAndThemes />
+              </Layout>
+            </ProtectedRoute>
           }
         />
         <Route
           path="/accountsettings"
           element={
-            <Layout>
-              <AccountSettings />
-            </Layout>
+            <ProtectedRoute>
+              <Layout>
+                <AccountSettings />
+              </Layout>
+            </ProtectedRoute>
           }
         />
         <Route
           path="/editprofile"
           element={
-            <Layout>
-              <EditProfile />
-            </Layout>
+            <ProtectedRoute>
+              <Layout>
+                <EditProfile />
+              </Layout>
+            </ProtectedRoute>
           }
         />
         <Route
           path="/privacysettings"
           element={
-            <Layout>
-              <PrivacySettings />
-            </Layout>
+            <ProtectedRoute>
+              <Layout>
+                <PrivacySettings />
+              </Layout>
+            </ProtectedRoute>
           }
         />
         <Route
           path="/termsandconditions"
           element={
-            <Layout>
-              <TermsAndConditions />
-            </Layout>
+            <ProtectedRoute>
+              <Layout>
+                <TermsAndConditions />
+              </Layout>
+            </ProtectedRoute>
           }
         />
       </Routes>
