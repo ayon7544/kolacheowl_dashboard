@@ -4,7 +4,7 @@ import { getCookie } from "./cookies";
 const allApi = createApi({
   reducerPath: "allApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: "https://nessa-kolacheowl-backend.vercel.app/api/v1",
+    baseUrl: "https://api.featherfield.net/api/v1",
     prepareHeaders: (headers) => {
       const token = getCookie("NessasBrokenWorldAuthToken");
       if (token) {
